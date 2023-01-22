@@ -4,6 +4,8 @@ import cors from 'cors'
 import { environment } from './config/env';
 import { connect } from './database/database';
 import userRoute from './routes/users/user.routes';
+import rolesRoute from './routes/roles/roles.routes'
+import permissionRoute from './routes/permission/permission.routes';
 import specialRoutes from './routes/users/special.routes';
 import passport from 'passport';
 import passportMiddleware from './middlewares/passport';
@@ -26,6 +28,8 @@ app.use(passport.initialize());
 passport.use(passportMiddleware);
 
 app.use('/users', userRoute, specialRoutes);
+app.use('/roles', rolesRoute);
+app.use('/permission', permissionRoute);
 
 
 export default app;

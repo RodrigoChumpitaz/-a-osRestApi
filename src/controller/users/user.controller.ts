@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import User from '../../model/user';
 import { IUser } from '../../interfaces/user.interface';
 import { createToken } from '../../helpers/createtoken';
+import { verificarToken } from '../../helpers/verificarToken';
 
 export const signup = async (req: Request, res: Response): Promise<Response> => {
     const { name, lastname, email, password, roles } = req.body;
@@ -47,3 +48,12 @@ export const signin = async (req: Request, res: Response) => {
         msg: 'The email or password are incorrect'
     })
 };
+
+export const userList = async (req: Request, res: Response) => {
+    const isEjecutor = await verificarToken(req);
+    if(!isEjecutor) return res.status(401).json({ msg: 'You are not authorized to access this resource' });
+    const users: IUser[] = await User.find().populate('roles');
+    return res.status(200).json(users);
+    // const users: IUser[] = await User.find().populate('roles');
+    // return res.status(200).json(users);
+}

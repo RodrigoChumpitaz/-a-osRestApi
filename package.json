@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Rest API for ÑaÑos Chicken",
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/index.ts"

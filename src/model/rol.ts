@@ -1,8 +1,12 @@
-import { Schema, model, SchemaTypeOptions } from "mongoose";
+import { Schema, model } from "mongoose";
 import { IRol } from "src/interfaces/rol.interface";
 
 const rolSchema: Schema = new Schema({
-    rol: { type: String, required: true, unique: true },
+    rol: { 
+        type: String, 
+        required: true, 
+        unique: true 
+    },
     permissions: [{
         type: Schema.Types.ObjectId,
         ref: 'Permission',

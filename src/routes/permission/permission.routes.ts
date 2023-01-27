@@ -1,5 +1,4 @@
 import { Router } from "express";
-import passport from "passport";
 import validate from "../../middlewares/validate";
 import { addpermission, permissionList } from "../../controller/permission/permission.controller";
 

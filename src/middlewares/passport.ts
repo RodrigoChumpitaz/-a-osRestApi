@@ -6,6 +6,8 @@ const opts: StrategyOptions = {
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
     secretOrKey: environment.jwtSecret
 }
+
+
 export default new Strategy(opts, async (payload, done) => {
     try {
         const user = await User.findById(payload.id)

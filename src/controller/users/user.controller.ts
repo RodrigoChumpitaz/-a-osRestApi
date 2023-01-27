@@ -2,10 +2,15 @@ import { Request, Response } from 'express';
 import User from '../../model/user';
 import { IUser } from '../../interfaces/user.interface';
 import { createToken } from '../../helpers/createtoken';
-import { verificarToken } from '../../helpers/verificarToken';
+import Verificar from '../../helpers/verificarToken';
+import Rol from '../../model/rol';
+import { IRol } from 'src/interfaces/rol.interface';
+
+const verificar = new Verificar();
 
 export const signup = async (req: Request, res: Response): Promise<Response> => {
     const { name, lastname, email, password, roles } = req.body;
+
     if(!name || !email || !password) {
         return res.status(400).json({
             msg: 'Please send your name, email and password'
@@ -17,9 +22,20 @@ export const signup = async (req: Request, res: Response): Promise<Response> => 
             msg: 'The user already exists'
         });
     }
-    const newUser = new User({ name, lastname, email, password, roles });
+    const newUser: IUser = new User({ name, lastname, email, password });
+    if(roles){
+        const findRol: any[] = await Rol.find({rol: { $in: roles }}); // find roles in db
+        newUser.roles = findRol.map(rol => rol._id); // get ids of roles
+    }else{
+        const rol: any = await Rol.findOne({ rol: 'user' });
+        console.log(rol);
+        newUser.roles = [rol._id];
+    }
     await newUser.save();
-    return res.status(201).json(newUser);
+    return res.status(201).json({
+        msg: 'User created successfully',
+        data: newUser
+    });
 };
 
 
@@ -45,12 +61,12 @@ export const signin = async (req: Request, res: Response) => {
         })
     }
     return res.status(400).json({
-        msg: 'The email or password are incorrect'
+        msg: 'The password is incorrect'
     })
 };
 
 export const userList = async (req: Request, res: Response) => {
-    const isEjecutor = await verificarToken(req);
+    const isEjecutor = await verificar.verificarToken(req);
     if(!isEjecutor) return res.status(401).json({ msg: 'You are not authorized to access this resource' });
     const users: IUser[] = await User.find().populate('roles');
     return res.status(200).json(users);

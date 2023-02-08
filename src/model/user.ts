@@ -1,9 +1,16 @@
 import { Schema,model } from "mongoose";
 import { IUser } from "src/interfaces/user.interface";
 import bcrypt from 'bcrypt'
+import { generarId } from "../helpers/generarId";
 const userSchema: Schema = new Schema({
     name: { type: String, required: true },
     lastname: { type: String, required: true },
+    documentType: { 
+        type: Schema.Types.ObjectId,
+        ref: 'DocumentType',
+        required: true 
+    },
+    documentNumber: { type: String, required: true },
     email: { 
         type: String, required: true, 
         unique: true, 
@@ -11,6 +18,9 @@ const userSchema: Schema = new Schema({
         lowercase: true 
     },
     password: { type: String, required: true },
+    address: { type: String, required: false, default: 'Perú' },
+    token: { type: String, default: generarId() },
+    confirmed: { type: Boolean, default: false },
     roles: [{
         type: Schema.Types.ObjectId,
         ref: 'Rol',

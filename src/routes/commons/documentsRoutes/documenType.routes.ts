@@ -1,8 +1,10 @@
 import { Request, Response, Router } from "express";
-import DocumenType from "../../model/documentType";
+import DocumenType from "../../../model/documentType";
 import { ok, err, Result } from "neverthrow";
+import Verificar from "../../../helpers/verificarToken";
 
 const router = Router();
+const verificar = new Verificar();
 
 router.get("/getDocTypes", async (req: Request, res: Response) => {
     const data = await DocumenType.find();
@@ -10,6 +12,8 @@ router.get("/getDocTypes", async (req: Request, res: Response) => {
 })
 router.post("/addDocType", async (req: Request, res: Response) => {
     try {
+        const isAdmin = await verificar.isAdmin(req);
+        if (!isAdmin) return res.status(401).json({ msg: 'The user dont have authorization' });
         const { type } = req.body;
         if(!type) return res.status(400).json({ message: "Type is required" });
         const newDocType = new DocumenType({ type });

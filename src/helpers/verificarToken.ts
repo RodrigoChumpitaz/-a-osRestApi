@@ -7,11 +7,12 @@ export default class Verificar{
     public async verificarToken(req: Request): Promise<boolean> {
         let isEjecutor: boolean = false;
         const token = req.headers.authorization.split(' ')[1];
-        const decoded = jwt.verify(token, environment.jwtSecret);
-        let user = await User.findOne({ decoded }).select('-password -lastname').populate('roles');
+        const decoded: any = jwt.verify(token, environment.jwtSecret);
+        let user = await User.findOne({ email: decoded.email }).select('-password -lastname').populate('roles');
         user.roles.forEach((rol) => {
             if (rol.rol === 'moderator' || rol.rol === 'admin') {
                 isEjecutor = true;
+                console.log('isEjecutor');
             }
         })
         return isEjecutor;

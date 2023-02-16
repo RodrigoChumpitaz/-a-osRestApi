@@ -7,9 +7,10 @@ import userRoute from './routes/users/user.routes';
 import rolesRoute from './routes/roles/roles.routes'
 import permissionRoute from './routes/permission/permission.routes';
 import specialRoutes from './routes/users/special.routes';
-import DocumentTypeRoutes from './routes/documentsRoutes/documenType.routes';
-import passport from 'passport';
-import passportMiddleware from './middlewares/passport';
+import DocumentTypeRoutes from './routes/commons/documentsRoutes/documenType.routes';
+import commonsRoutes from './routes/commons/commons.routes';
+import swaggerUi from 'swagger-ui-express';
+import swaggerDocument from '../swagger.json';
 import pkg from '../package.json';
 
 // inicializaciones
@@ -33,11 +34,11 @@ app.use(express.urlencoded({ extended: false }));
 
 // get de bienvienida
 app.get('/', (req, res) => {
-   res.json({
+    res.json({
         name: pkg.name,
         version: pkg.version,
         description: pkg.description,
-   }) 
+    }) 
 })
 
 // routes
@@ -45,6 +46,8 @@ app.use('/users', userRoute, specialRoutes);
 app.use('/roles', rolesRoute);
 app.use('/permission', permissionRoute);
 app.use('/documents', DocumentTypeRoutes)
+app.use('/commons', commonsRoutes)
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 
 export default app;

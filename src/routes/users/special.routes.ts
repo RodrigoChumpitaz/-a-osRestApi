@@ -4,6 +4,6 @@ import { userList } from "../../controller/users/user.controller";
 
 const router = Router();
 
-router.get('/special', validate ,userList)
+router.get('/special', validate, userList)
 
 export default router;

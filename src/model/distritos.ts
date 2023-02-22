@@ -2,16 +2,19 @@ import { model, Schema } from "mongoose";
 import { IDistrito } from "src/interfaces/distrito.interface";
 
 
-const distritoSchema =  new Schema({
+const distritoSchema: Schema =  new Schema({
     nombre: { type: String, required: [true, 'El nombre es necesario'], unique: true },
     slug: { type: String },
+    active: { type: Boolean, default: false },
     locals: [ { type: Schema.Types.ObjectId, ref: 'Local' } ]
 },{
     timestamps: true
 })
 
 distritoSchema.pre<IDistrito>('save', async function(next){
-    this.slug = this.generatedSlug();
+    if(!this.slug){
+        this.slug = this.generatedSlug();
+    }
     next();
 });
 

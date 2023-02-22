@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { ok } from "neverthrow";
 import fetch from 'node-fetch';
+import { IDistrito } from "src/interfaces/distrito.interface";
 import Distrito from "../../model/distritos";
 
 
@@ -18,11 +19,11 @@ export const getDistritosLima = async(req: Request, res: Response): Promise<any>
         //     count: distritos.length,
         //     data: distritos
         // })
-        const distritos = await Distrito.find();
-        return ok(res.status(200).json({
-            originalData: distritosToApi,
-            dbData: distritos
-        }));
+        const distritos: IDistrito[] = await Distrito.find({ active: true }).populate({ "path": "locals", "select": "-distrito -createdAt -updatedAt -__v" });
+        return ok(res.status(200).json(
+            // originalData: distritosToApi,
+            distritos
+        ));
     } catch (error) {
         return res.status(500).json({ msg: error.message });
     }

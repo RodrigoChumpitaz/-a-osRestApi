@@ -10,6 +10,7 @@ import specialRoutes from './routes/users/special.routes';
 import DocumentTypeRoutes from './routes/commons/documentsRoutes/documenType.routes';
 import commonsRoutes from './routes/commons/commons.routes';
 import LocalRoutes from './routes/commons/locals.routes';
+import categoryRoutes from './routes/categoria/categoria.routes';
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from '../swagger.json';
 import pkg from '../package.json';
@@ -48,6 +49,7 @@ app.use('/roles', rolesRoute);
 app.use('/permission', permissionRoute);
 app.use('/documents', DocumentTypeRoutes)
 app.use('/commons', commonsRoutes, LocalRoutes)
+app.use('/category', categoryRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 

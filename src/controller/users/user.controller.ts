@@ -4,11 +4,10 @@ import { IUser } from '../../interfaces/user.interface';
 import { createAuthToken, createRefreshToken } from '../../helpers/createtoken';
 import Verificar from '../../helpers/verificarToken';
 import Rol from '../../model/rol';
-import { IRol } from 'src/interfaces/rol.interface';
 import DocumentType from '../../model/documentType';
 import { IDocumentType } from '../../interfaces/documentType.interface';
 import { ok, err, Result } from "neverthrow";
-import { generarId } from '../../helpers/generarId';
+import { generarId } from '../../helpers/create-strings';
 import { UserInsertResultApp, UserListResultApp } from '../../config/results/user.result';
 import { UserInsertException, UserListException } from '../../config/exceptions/user.exception';
 
@@ -118,9 +117,7 @@ export const userList = async (req: Request, res: Response): Promise<UserListRes
 export const perfil = async (req: Request, res: Response) => {
     try {
         const { user } = req;
-        return ok(res.json({
-            data: user
-        }));
+        return ok(res.json(user));
     } catch (error) {
         return err(res.status(500).json({ msg: error.message }));
     }

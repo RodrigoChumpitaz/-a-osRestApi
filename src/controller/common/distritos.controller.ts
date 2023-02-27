@@ -32,6 +32,9 @@ export const getDistritosLima = async(req: Request, res: Response): Promise<any>
 export const addDistritosMasive = async(req: Request, res: Response): Promise<any> => {
     const data = await fetch('http://localhost:3500/commons/distritos');
     const response = await data.json();
+    /* 
+     ? METODO PARA AGREGAR DISTRITOS MASIVAMENTE
+    */
     // response.data.forEach(async ({name}: any) => {
     //     // console.log(name);
     //     let newDistrito = new Distrito({ nombre: name });

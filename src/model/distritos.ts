@@ -1,5 +1,6 @@
 import { model, Schema } from "mongoose";
-import { IDistrito } from "src/interfaces/distrito.interface";
+import { getSlug } from "../helpers/create-strings";
+import { IDistrito } from "../interfaces/distrito.interface";
 
 
 const distritoSchema: Schema =  new Schema({
@@ -19,12 +20,7 @@ distritoSchema.pre<IDistrito>('save', async function(next){
 });
 
 distritoSchema.methods.generatedSlug = function(): string{
-    const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let slug = '';
-    for (let i = 0; i < 10; i++) {
-        slug += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-    return slug;
+    return getSlug();
 }
 
 export default model<IDistrito>('Distrito', distritoSchema);

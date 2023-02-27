@@ -1,7 +1,7 @@
 import { Schema,model } from "mongoose";
 import { IUser } from "src/interfaces/user.interface";
 import bcrypt from 'bcrypt'
-import { generarId } from "../helpers/generarId";
+import { generarId } from "../helpers/create-strings";
 const userSchema: Schema = new Schema({
     name: { type: String, required: true },
     lastname: { type: String, required: true },

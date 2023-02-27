@@ -11,6 +11,7 @@ import DocumentTypeRoutes from './routes/commons/documentsRoutes/documenType.rou
 import commonsRoutes from './routes/commons/commons.routes';
 import LocalRoutes from './routes/commons/locals.routes';
 import categoryRoutes from './routes/categoria/categoria.routes';
+import cartaRoutes from './routes/carta/carta.routes';
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from '../swagger.json';
 import pkg from '../package.json';
@@ -24,17 +25,16 @@ connect();
 app.set('port', env.PORT || 3500);
 
 // middlwares
+app.use(express.json()); 
 app.use(morgan('dev'));
 app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS	'],
     origin: '*'
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 // app.use(passport.initialize());
 // passport.use(passportMiddleware);
 
-// get de bienvienida
+// get de bienvenida
 app.get('/', (req, res) => {
     res.json({
         name: pkg.name,
@@ -50,6 +50,7 @@ app.use('/permission', permissionRoute);
 app.use('/documents', DocumentTypeRoutes)
 app.use('/commons', commonsRoutes, LocalRoutes)
 app.use('/category', categoryRoutes);
+app.use('/carta', cartaRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 

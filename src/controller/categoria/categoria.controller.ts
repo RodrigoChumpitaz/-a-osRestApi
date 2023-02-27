@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { err, ok } from "neverthrow";
-import { ICategoria } from "src/interfaces/categoria.interface";
+import { ICategoria } from "../../interfaces/categoria.interface";
+import { FileResponse } from "../../interfaces/file-response.interface";
 import Categoria from "../../model/categoria";
 
 
@@ -17,9 +18,15 @@ export const addCategoria = async (req: Request, res: Response) => {
     try {
         const { description } = req.body;
         if(!description) return err(res.status(400).json({ message: 'Description is required' }));
+        if(req.file){
+            const file: Partial<FileResponse> = req.file;
+            const newCategoria = new Categoria({ description, imgUrl: file.location });
+            await newCategoria.save();
+            return ok(res.status(200).json({ msg: 'Category added succesfully' ,categoria: newCategoria }));
+        }
         const newCategoria = new Categoria({ description });
         await newCategoria.save();
-        return ok(res.status(200).json({ message: 'Category added', categoria: newCategoria }));
+        return ok(res.status(200).json({ msg: 'Category added succesfully' ,categoria: newCategoria }));
     } catch (error) {
         return err(res.status(500).json({ message: error.message }));
     }
@@ -49,10 +56,10 @@ export const categoryById = async (req: Request, res: Response) => {
 
 export const changeStateToCategory = async (req: Request, res: Response) => {
     try {
-        const { id, data } = req.params;
+        const { id } = req.params;
         const categoryByData: ICategoria = await Categoria.findById(id);
         if(!categoryByData) return err(res.status(404).json({ message: 'Category not found', status: 404 }));
-        if(data === "0"){
+        if(categoryByData.state === false){
             await Categoria.findByIdAndUpdate(id, { state: true });
             return ok(res.status(200).json({ message: 'Category activated', status: 200 }));
         }
@@ -66,12 +73,17 @@ export const changeStateToCategory = async (req: Request, res: Response) => {
 export const updateCategory = async (req: Request, res: Response) => {
     try {
         const { slug } = req.params;
-        const { data } = req.body;
+        const { description } = req.body;
         const categoryBySlug: ICategoria = await Categoria.findOne({ slug });
         if(!categoryBySlug) return err(res.status(404).json({ message: 'Category not found', status: 404 }));
-        categoryBySlug.description = data.description;
+
+        if (req.file) {
+            const file: Partial<FileResponse> = req.file;
+            categoryBySlug.imgUrl = file.location;
+        }
+        categoryBySlug.description = description || categoryBySlug.description;
         await categoryBySlug.save();
-        return ok(res.status(200).json({ message: 'Category updated', status: 200 }));
+        return ok(res.status(200).json({ message: 'Category updated', data: categoryBySlug ,status: 200 }));
     } catch (error) {
         return err(res.status(500).json({ message: error.message }));
     }

@@ -45,7 +45,6 @@ export const getLocalByData = async (req: Request, res: Response) => {
                 { slug: data }, 
                 { telefono: data },
                 { direccion: data },
-                // { _id: data }
             ] 
         }).select('-__v -createdAt -updatedAt');
         if(!local) return err(res.status(404).json({ message: 'Local not found' }));

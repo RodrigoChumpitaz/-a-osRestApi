@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
-import { IDocumentType } from "src/interfaces/documentType.interface";
+import { getSlug } from "../helpers/create-strings";
+import { IDocumentType } from "../interfaces/documentType.interface";
 
 const documentTypeSchema: Schema = new Schema({
     type: { type: String, required: true, trim: true },
@@ -15,12 +16,7 @@ documentTypeSchema.pre<IDocumentType>('save', async function(next){
 });
 
 documentTypeSchema.methods.generatedSlug = function(): string{
-    const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let slug = '';
-    for (let i = 0; i < 10; i++) {
-        slug += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-    return slug;
+    return getSlug();
 }
 
 export default model<IDocumentType>('DocumentType', documentTypeSchema);

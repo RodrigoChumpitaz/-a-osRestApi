@@ -12,7 +12,6 @@ export default class Verificar{
         user.roles.forEach((rol) => {
             if (rol.rol === 'moderator' || rol.rol === 'admin') {
                 isEjecutor = true;
-                console.log('isEjecutor');
             }
         })
         return isEjecutor;

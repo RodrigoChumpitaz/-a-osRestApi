@@ -1,5 +1,4 @@
 import { Router } from "express";
-import passport from "passport";
 import validate from "../../middlewares/checkout";
 import { addRols, rolesList } from "../../controller/roles/roles.controller";
 

@@ -1,9 +1,12 @@
 import { Request, Response } from "express";
 import { err, ok } from "neverthrow";
+import Verificar from "../../helpers/verificarToken";
 import { IDistrito } from "src/interfaces/distrito.interface";
 import { ILocal } from "src/interfaces/local.interface";
 import Distrito from "../../model/distritos";
 import Local from "../../model/local";
+
+const verificar =  new Verificar()
 
 export const getLocals = async (req: Request, res: Response) => {
     try {
@@ -18,6 +21,8 @@ export const getLocals = async (req: Request, res: Response) => {
 export const addLocal = async (req: Request, res: Response) => {
     try {
         const { telefono, direccion, distrito } = req.body;
+        const isAdmin = await verificar.isAdmin(req);
+        if(!isAdmin) return res.status(401).json({ msg: 'The user dont have authorization to this action' });
         const distritoByName: IDistrito = await Distrito.findOne({ nombre: distrito }).select('-__v -createdAt -updatedAt');
         if(!distritoByName) return err(res.status(404).json({ message: 'Distric not found' }));
         const newLocal: ILocal =  new Local({ telefono, direccion, distrito: { id: distritoByName.id, slug: distritoByName.slug, name: distritoByName.nombre} });
@@ -53,6 +58,19 @@ export const getLocalByData = async (req: Request, res: Response) => {
         return err(res.status(500).json({ message: error.message }));
     }
 };
+
+export const getLocalByDistrict = async (req: Request, res: Response) => {
+    try {
+        const { district } = req.params;
+        const locals: Partial<ILocal[] | Document[]> =  await Local.find({
+            'distrito.name': district 
+        }).select('-__v -distrito.id -distrito.slug -createdAt -updatedAt');
+        if(!locals || locals.length == 0) return err(res.status(404).json({ message: 'Local not found because the district is incorrect or doesnt exist' }));
+        return ok(res.status(200).json(locals));
+    } catch (error) {
+        return err(res.status(500).json({ message: error.message }));
+    }
+}
 
 export const updateLocal = async (req: Request, res: Response) => {
     try {

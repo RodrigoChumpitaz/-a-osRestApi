@@ -129,6 +129,7 @@ export const olvidePassword = async (req: Request, res: Response) => {
     if(!userByEmail) return res.status(400).json({ msg: 'The email dont exist' });
     try {
         userByEmail.token = generarId();
+        userByEmail.confirmed = false;
         await userByEmail.save();
         return ok(res.status(200).json({ 
             msg: 'Se ha enviado un email con token a confirmar',
@@ -162,6 +163,7 @@ export const cambiarPassword = async (req: Request, res: Response) => {
     try {
         userToken.token = null;
         userToken.password = password;
+        userToken.confirmed = true;
         await userToken.save();
         return ok(res.status(200).json({ msg: 'Password changed successfully', data: userToken.password }));
     }

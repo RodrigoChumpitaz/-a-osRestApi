@@ -1,12 +1,14 @@
 import { Request, Response, Router } from "express";
 import DocumenType from "../../../model/documentType";
-import { ok, err, Result } from "neverthrow";
+import { ok, err} from "neverthrow";
 import Verificar from "../../../helpers/verificarToken";
+import validate from "../../../middlewares/checkout";
+
 
 const router = Router();
 const verificar = new Verificar();
 
-router.get("/getDocTypes", async (req: Request, res: Response) => {
+router.get("/getDocTypes", validate, async (req: Request, res: Response) => {
     const data = await DocumenType.find();
     return ok(res.status(200).json(data));
 })

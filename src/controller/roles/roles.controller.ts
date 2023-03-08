@@ -20,7 +20,7 @@ export const rolesList = async (req: Request, res: Response) => {
 export const addRols = async (req: Request, res: Response) => {
     try {
         const isAdmin = await verificar.isAdmin(req);
-        if (!isAdmin) return res.status(401).json({ msg: 'The user dont have authorization' });
+        if (!isAdmin) return res.status(401).json({ msg: 'The user dont have authorization to this action' });
         const { rol, permissions } = req.body;
         const rolExists: IRol = await Rol.findOne({ rol });
         if(rolExists) return res.status(400).json({ msg: 'The rol already exists' });

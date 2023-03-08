@@ -11,7 +11,8 @@ const rolSchema: Schema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Permission',
         required: true
-    }]
+    }],
+    isActive: { type: Boolean, default: true }
 },{
     timestamps: true,
     versionKey: false

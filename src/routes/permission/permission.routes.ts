@@ -4,7 +4,8 @@ import { addpermission, permissionList } from "../../controller/permission/permi
 
 const router = Router();
 
-router.get('/', validate, permissionList)
-router.post('/addPermission', validate, addpermission)
+router.use(validate);
+router.get('/', permissionList)
+router.post('/addPermission', addpermission)
 
 export default router;

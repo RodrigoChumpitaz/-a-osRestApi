@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { mimetypes, upload, UploadBuilder } from "../../middlewares/Upload";
-import { addCart, changeAvailable, getCartasByCategory, getCarts, searchCart, updateCart } from "../../controller/carta/carta.controller";
+import { addCart, cartDataByIds, changeAvailable, getCartasByCategory, getCarts, searchCart, updateCart } from "../../controller/carta/carta.controller";
 import validate from "../../middlewares/checkout";
 
 const router: Router = Router();
@@ -16,6 +16,7 @@ router.post("/addCart", validate, upload.save(
 ),addCart)
 router.get("/getCartByData/:data", searchCart)
 router.get("/getCartByCategory/:category", getCartasByCategory)
+router.post("/getCartsByIds", cartDataByIds)
 router.patch("/unvailableCart/:id", validate, changeAvailable)
 router.patch("/updateCart/:slug", validate, upload.save(
     new UploadBuilder()

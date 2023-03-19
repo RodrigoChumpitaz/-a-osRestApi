@@ -13,5 +13,7 @@ export const environment = {
     AWS_ACCESS_KEY_SECRET: env.AWS_ACCESS_KEY_SECRET,
     AWS_BUCKET_NAME: env.AWS_BUCKET_NAME,
     AWS_REGION: env.AWS_REGION,
+    BOT_EMAIL: env.BOT_EMAIL,
+    BOT_PASS: env.BOT_PASS,
 }
 

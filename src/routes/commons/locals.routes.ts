@@ -4,10 +4,12 @@ import { addLocal, getLocalByData, getLocalByDistrict, getLocals, updateLocal } 
 
 const router: Router = Router();
 
-router.get('/locals', validate, getLocals)
-router.get('/local/:data', validate, getLocalByData)
-router.get('/localByDistrict/:district', validate, getLocalByDistrict)
-router.patch('/local/:id', validate, updateLocal)
-router.post('/addLocals', validate, addLocal)
+router.use(validate);
+
+router.get('/locals', getLocals)
+router.get('/local/:data', getLocalByData)
+router.get('/localByDistrict/:district', getLocalByDistrict)
+router.patch('/local/:id', updateLocal)
+router.post('/addLocals', addLocal)
 
 export default router;

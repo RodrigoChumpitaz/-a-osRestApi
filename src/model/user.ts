@@ -10,7 +10,7 @@ const userSchema: Schema = new Schema({
         ref: 'DocumentType',
         required: true 
     },
-    documentNumber: { type: String, required: true },
+    documentNumber: { type: String, required: true, unique: true },
     email: { 
         type: String, required: true, 
         unique: true, 

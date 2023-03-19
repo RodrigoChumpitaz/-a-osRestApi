@@ -1,16 +1,14 @@
 import { Request, Response } from "express";
-import express from "express";
 import * as nodemailer from "nodemailer";
-import * as bodyParser from "body-parser";
-require('dotenv').config();
+import { environment } from "../config/env";
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
   secure: false,
   auth: {
-    user: process.env.BOT_EMAIL,
-    pass: process.env.BOT_PASS,
+    user: environment.BOT_EMAIL,
+    pass: environment.BOT_PASS,
   },
   tls: {
     rejectUnauthorized: false
@@ -33,9 +31,13 @@ export const sendMail = async (req: Request, res: Response) => {
   try {
     // Enviamos el correo electrónico utilizando el transporter definido anteriormente
     await transporter.sendMail(mailOptions);
-    res.status(200).send("Correo electrónico enviado correctamente");
+    res.status(200).json({
+      msg: "Correo electrónico enviado correctamente",
+    });
   } catch (error) {
     console.log(error);
-    res.status(500).send("Error al enviar el correo electrónico");
+    res.status(500).json({
+      msg: "Error al enviar el correo electrónico",
+    });
   }
 };

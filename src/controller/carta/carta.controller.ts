@@ -59,6 +59,18 @@ export const searchCart = async (req: Request, res: Response) => {
     }
 }
 
+export const cartDataByIds = async (req: Request, res: Response) => {
+    try {
+        const { dataMap } = req.body;
+        const carts: Partial<ICarta[] | Document[]> = await Carta.find({ 
+            _id: { $in: dataMap } 
+        }).select("-category.slug -category.id -createdAt -updatedAt");
+        return res.json(carts);
+    } catch (error) {
+        return err(res.status(500).json({ message: error.message }));
+    }
+}
+
 export const getCartasByCategory = async (req: Request, res: Response) => {
     try {
         const { category } = req.params;

@@ -9,42 +9,65 @@ import { IDocumentType } from '../../interfaces/documentType.interface';
 import { ok, err, Result } from "neverthrow";
 import { generarId } from '../../helpers/create-strings';
 import { UserInsertResultApp, UserListResultApp } from '../../config/results/user.result';
-import { UserInsertException, UserListException } from '../../config/exceptions/user.exception';
+import { UserInsertException, UserListException, Uservalidators } from '../../config/exceptions/user.exception';
 
 const verificar = new Verificar();
+const validator = new Uservalidators();
 export type UserInsertResult = Result<UserInsertResultApp, UserInsertException>;
 export type UserListResult = Result<UserListResultApp, UserListException>;
 
 export const signup = async (req: Request, res: Response): Promise<UserInsertResult | Response>  => {
     try {
         const { name, lastname, email, password, documentType, documentNumber, roles } = req.body;
+        const { token_insert_user } = req.headers;
 
         if(!name || !email || !password || !documentType || !documentNumber) {
             return res.status(400).json({
-                msg: 'All fields are required'
+                msg: 'All fields are required',
+                success: false
             });
         }
-        const user: IUser = await User.findOne({ email });
+        const user: IUser = await User.findOne({ $or: [
+            { email: email },
+            { documentNumber: documentNumber } 
+        ]});
         if(user) {
             return res.status(400).json({
-                msg: 'The user already exists'
+                msg: 'The user already exists',
+                success: false
             });
         }
         const docType: IDocumentType = await DocumentType.findOne({ type: documentType });
-        if(!docType) return res.status(400).json({ msg: 'The document type does not exist' });
+        if(!docType) return res.status(400).json({ msg: 'The document type does not exist', success: false });
 
         const newUser: IUser = new User({ name, lastname, email, documentType: docType, documentNumber, password });
-        if(roles){
+        if(roles && token_insert_user){
             const findRol: any[] = await Rol.find({rol: { $in: roles }}); // find roles in db
             newUser.roles = findRol.map(rol => rol._id); // get ids of roles
         }else{
             const rol: any = await Rol.findOne({ rol: 'user' });
             newUser.roles = [rol._id];
         }
+        const validateDocNumberResult = validator.validateDocumentNumber(documentType, documentNumber);
+        if (validateDocNumberResult.message) return res.status(validator.status).json({ msg: validateDocNumberResult.message, success: false });
+
+        const existDocNumber = await validator.existDocumentNumber(documentType, documentNumber);
+
+        if(token_insert_user) {
+            newUser.token = null;
+            newUser.confirmed = true;
+            existDocNumber.response.success = true;
+        }
+        if(existDocNumber.response.success === false) return res.status(validator.status).json({ msg: existDocNumber.message, success: false });
+
+        if(validator.validatePassword(password) != null) {
+            return res.status(validator.status).json({ msg: validator.validatePassword(password).message, success: false });
+        }
         await newUser.save();
         return res.status(201).json({
             msg: 'User created successfully',
-            data: newUser
+            token: newUser.token,
+            success: true
         });
     } catch (error) {
         return err(new UserInsertException(error.message));

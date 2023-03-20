@@ -18,7 +18,7 @@ router.get("/getCartByData/:data", searchCart)
 router.get("/getCartByCategory/:category", getCartasByCategory)
 router.post("/getCartsByIds", cartDataByIds)
 router.patch("/unvailableCart/:id", validate, changeAvailable)
-router.patch("/updateCart/:slug", validate, upload.save(
+router.patch("/updateCart", validate, upload.save(
     new UploadBuilder()
         .addMaxSize(5000000)
         .addFieldName("cartImage")

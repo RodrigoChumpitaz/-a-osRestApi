@@ -103,27 +103,24 @@ export const changeAvailable = async (req: Request, res: Response) => {
 
 export const updateCart = async (req: Request, res: Response) => {
     try {
-        const { slug } = req.params;
-        const { name, price, description, category } = req.body;
-        const cartBySlug: ICarta = await Carta.findOne({ slug });
-        if(!cartBySlug || cartBySlug === null) return res.status(404).json({ message: 'Cart not found' });
+        const { name, price, description, category, id } = req.body;
+        const cartaById: ICarta = await Carta.findOne({ _id: id });
+        if(!cartaById || cartaById === null) return res.status(404).json({ message: 'Cart not found' });
         
         const categoryByName: ICategoria = await Categoria.findOne({ description: category });
-        console.log(category);
-        if(!categoryByName || cartBySlug === null) return res.status(404).json({ message: 'Category not found' });
+        if(!categoryByName || cartaById === null) return res.status(404).json({ message: 'Category not found' });
         const _dataCategory = getDataByCategory(categoryByName);
 
         if(req.file){
             const file: Partial<FileResponse> = req.file;
-            cartBySlug.imgUrl = file.location;
-            console.log(file.location);
+            cartaById.imgUrl = file.location;
         }
-        cartBySlug.name = name || cartBySlug.name;
-        cartBySlug.price = price || cartBySlug.price;
-        cartBySlug.description = description || cartBySlug.description;
-        cartBySlug.category = _dataCategory || cartBySlug.category;
-        await cartBySlug.save();
-        return res.status(200).json({ message: 'Cart updated succesfully', cart: cartBySlug });
+        cartaById.name = name || cartaById.name;
+        cartaById.price = price || cartaById.price;
+        cartaById.description = description || cartaById.description;
+        cartaById.category = _dataCategory || cartaById.category;
+        await cartaById.save();
+        return res.status(200).json({ message: 'Cart updated succesfully', cart: cartaById });
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }

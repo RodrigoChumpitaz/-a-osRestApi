@@ -1,7 +1,8 @@
 import { Schema,model } from "mongoose";
 import { IUser } from "src/interfaces/user.interface";
 import bcrypt from 'bcrypt'
-import { generarId } from "../helpers/create-strings";
+import { generarId, getSlug } from "../helpers/create-strings";
+
 const userSchema: Schema = new Schema({
     name: { type: String, required: true },
     lastname: { type: String, required: true },
@@ -21,6 +22,7 @@ const userSchema: Schema = new Schema({
     address: { type: String, required: false, default: 'Perú' },
     token: { type: String, default: generarId() },
     confirmed: { type: Boolean, default: false },
+    slug: { type: String },
     roles: [{
         type: Schema.Types.ObjectId,
         ref: 'Rol',
@@ -32,6 +34,9 @@ const userSchema: Schema = new Schema({
 });
 
 userSchema.pre<IUser>('save', async function(next){
+    if (!this.slug) {
+        this.slug = getSlug();
+    }
     const user: IUser = this;
     if(!user.isModified('password')) return next();
     const salt = await bcrypt.genSalt(10);
@@ -39,6 +44,10 @@ userSchema.pre<IUser>('save', async function(next){
     user.password = hash;
     next();
 })
+
+userSchema.methods.generatedSlug = function(): string{
+    return getSlug();
+}
 
 userSchema.methods.comparePassword = async function(password: string): Promise<boolean>{ 
     return await bcrypt.compare(password, this.password);

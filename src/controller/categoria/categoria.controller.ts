@@ -7,6 +7,11 @@ import Categoria from "../../model/categoria";
 
 export const getCategorias = async (req: Request, res: Response) => {
     try {
+        const { user_token } = req.headers;
+        if(user_token){
+            const categories = await Categoria.find();
+            return ok(res.status(200).json(categories));
+        }
         const categories = await Categoria.find({ state: true });
         return ok(res.status(200).json(categories));
     } catch (error) {
@@ -22,7 +27,7 @@ export const addCategoria = async (req: Request, res: Response) => {
             const file: Partial<FileResponse> = req.file;
             const newCategoria = new Categoria({ description, imgUrl: file.location });
             await newCategoria.save();
-            return ok(res.status(200).json({ msg: 'Category added succesfully' ,categoria: newCategoria }));
+            return ok(res.status(200).json({ msg: 'Category added succesfully', categoria: newCategoria }));
         }
         const newCategoria = new Categoria({ description });
         await newCategoria.save();

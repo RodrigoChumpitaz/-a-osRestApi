@@ -96,4 +96,18 @@ export const updateLocal = async (req: Request, res: Response) => {
     }
 };
 
-
+export const inactiveLocal = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const localById = await Local.findById(id).select('-__v -createdAt -updatedAt');
+        if(!localById) return err(res.status(404).json({ message: 'Local not found' }));
+        await Local.findByIdAndUpdate(id, { active: false });
+        if(localById.active === false){
+            await Local.findByIdAndUpdate(id, { active: true });
+            return ok(res.status(200).json({ message: 'Local active' }));
+        }
+        return ok(res.status(200).json({ message: 'Local inactive' }));
+    } catch (error) {
+        return err(res.status(500).json({ message: error.message }));
+    }
+}

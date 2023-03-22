@@ -1,5 +1,5 @@
 export interface IPedido extends Document {
-    deliveryData: Date;
+    deliveryDate: Date;
     imgPrueba: string;
     observation: string;
     status: string;

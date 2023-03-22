@@ -1,11 +1,10 @@
 import { Schema, model } from 'mongoose'
+import { getSlug } from '../helpers/create-strings';
 import { IDetallePedido } from 'src/interfaces/detalle_pedido';
 
 const detallePedidoSchema = new Schema({
     detail: { type: String },
     Cart: { type: Schema.Types.ObjectId, ref: 'Carta' },
-    observation: { type: String },
-    step: { type: Number, default: 1 },
     order: { type: Schema.Types.ObjectId, ref: 'Pedido' },
     quantity: { type: Number, default: 1 },
     slug: { type: String }
@@ -20,6 +19,10 @@ detallePedidoSchema.pre<IDetallePedido>('save', async function(next){
     }
     next();
 })
+
+detallePedidoSchema.methods.generatedSlug = function(): string{
+    return getSlug();
+}
 
 export default model('DetallePedido', detallePedidoSchema)
 

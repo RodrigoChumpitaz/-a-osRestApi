@@ -10,7 +10,9 @@ export interface IUser extends Document{
     password: string;
     address: string;
     token: string;
+    slug: string;
     confirmed: boolean;
     roles: IRol[];
     comparePassword: (password: string) => Promise<boolean>;
+    generatedSlug: () => string;
 }

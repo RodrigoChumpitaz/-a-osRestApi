@@ -13,6 +13,8 @@ import LocalRoutes from './routes/commons/locals.routes';
 import categoryRoutes from './routes/categoria/categoria.routes';
 import cartaRoutes from './routes/carta/carta.routes';
 import emailRoutes from './email/email.routes';
+import pedidosRoutes from './routes/orders/pedido.routes';
+import detailRoutes from './routes/orders/detalle-pedido.routes';
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from '../swagger.json';
 import pkg from '../package.json';
@@ -53,6 +55,7 @@ app.use('/commons', commonsRoutes, LocalRoutes)
 app.use('/category', categoryRoutes);
 app.use('/carta', cartaRoutes);
 app.use('/mail', emailRoutes);
+app.use('/orders', pedidosRoutes, detailRoutes);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 

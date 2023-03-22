@@ -8,7 +8,7 @@ import validate from "../../../middlewares/checkout";
 const router = Router();
 const verificar = new Verificar();
 
-router.use(validate);
+// router.use(validate);
 
 router.get("/getDocTypes", async (req: Request, res: Response) => {
     const data = await DocumenType.find();

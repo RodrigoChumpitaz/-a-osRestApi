@@ -76,7 +76,7 @@ export const getCartasByCategory = async (req: Request, res: Response) => {
         const { category } = req.params;
         const carts: Partial<ICarta[] | Document[]> = await Carta.find({ 
             'category.name': category, available: true 
-        }).select("-_id -category.slug -category.id -createdAt -updatedAt");
+        }).select("-category.slug -category.id -createdAt -updatedAt");
         if(!carts || carts.length === 0) return res.status(404).json({ message: "The Category does'nt exist or is incorrect" });
         return ok(res.status(200).json(carts));
     } catch (error) {

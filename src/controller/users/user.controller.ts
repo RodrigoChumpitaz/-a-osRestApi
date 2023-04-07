@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import e, { Request, Response } from 'express';
 import User from '../../model/user';
 import { IUser } from '../../interfaces/user.interface';
 import { createAuthToken, createRefreshToken } from '../../helpers/createtoken';
@@ -52,13 +52,16 @@ export const signup = async (req: Request, res: Response): Promise<UserInsertRes
         if (validateDocNumberResult.message) return res.status(validator.status).json({ msg: validateDocNumberResult.message, success: false });
 
         const existDocNumber = await validator.existDocumentNumber(documentType, documentNumber);
-
+        
         if(token_insert_user) {
             newUser.token = null;
             newUser.confirmed = true;
             existDocNumber.response.success = true;
         }
+        if(documentType === 'CE') existDocNumber.response.success = true;
+
         if(existDocNumber.response.success === false) return res.status(validator.status).json({ msg: existDocNumber.message, success: false });
+
 
         if(validator.validatePassword(password) != null) {
             return res.status(validator.status).json({ msg: validator.validatePassword(password).message, success: false });
@@ -93,6 +96,9 @@ export const signin = async (req: Request, res: Response) => {
             });
         }
 
+        if(user.confirmed === false) return res.status(400).json({ msg: 'The user is not confirmed' });
+        if(user.status === "inactive") return res.status(400).json({ msg: 'The user is inactive' });
+
         const isMatch = await user.comparePassword(password)
         if(isMatch && user.token  === null) {
             res.cookie('access_token', createAuthToken(user), { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 });
@@ -102,8 +108,8 @@ export const signin = async (req: Request, res: Response) => {
                 status: true,
             });
         }
-        if(user.confirmed === false) return res.status(400).json({ msg: 'The user is not confirmed' });
-        return ok(res.status(400).json({
+
+        return err(res.status(400).json({
             msg: 'The password is incorrect',
             status: false
         }));
@@ -191,6 +197,54 @@ export const cambiarPassword = async (req: Request, res: Response) => {
         return ok(res.status(200).json({ msg: 'Password changed successfully', data: userToken.password }));
     }
     catch(error) {
+        return err(res.status(500).json({ msg: error.message }));
+    }
+}
+
+
+export const updateUserById = async (req: Request, res: Response) => {
+    try {
+        const { name, lastname, email, password, roles }  = req.body;
+        const { id } = req.params;
+        const userById: IUser = await User.findById(id);
+        console.log(userById);
+        if(!userById || userById === null) return res.status(400).json({ msg: 'The user dont exist' });
+        userById.name = name || userById.name;
+        userById.lastname = lastname || userById.lastname;
+        userById.email = email || userById.email;
+        if(!password || password === "") {
+            userById.password = userById.password;
+        }
+        else{
+            userById.password = password.trim();
+        }
+        if(roles){
+            const findRol: any[] = await Rol.find({rol: { $in: roles }});
+            userById.roles = findRol.map(rol => rol._id);
+        }
+        else{
+            userById.roles = userById.roles;
+        }
+        await userById.save();
+        return res.status(200).json({ msg: 'User updated successfully', data: userById });
+    } catch (error) {
+        return err(res.status(500).json({ msg: error.message }));   
+    }
+}
+
+
+export const changeUserStatus = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const userById: IUser = await User.findById(id);
+        if(!userById || userById === null) return res.status(400).json({ msg: 'The user dont exist' });
+        if(userById.status === "active"){
+            await User.findByIdAndUpdate(id, { status: "inactive" });
+            return res.status(200).json({ msg: 'User status changed to inactive'});
+        }
+        await User.findByIdAndUpdate(id, { status: "active" });
+        return res.status(200).json({ msg: 'User status changed to active'});
+    } catch (error) {
         return err(res.status(500).json({ msg: error.message }));
     }
 }

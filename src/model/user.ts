@@ -22,6 +22,7 @@ const userSchema: Schema = new Schema({
     address: { type: String, required: false, default: 'Perú' },
     token: { type: String, default: generarId() },
     confirmed: { type: Boolean, default: false },
+    status: { type: String, default: "active" },
     slug: { type: String },
     roles: [{
         type: Schema.Types.ObjectId,

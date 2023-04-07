@@ -42,3 +42,27 @@ export const getOrdersByUser = async (req: Request, res: Response) => {
     }
 
 }
+
+export const confirmOrder = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const orderToConfirm = await Pedido.findById(id); 
+        let estadoActual = orderToConfirm.status;
+        if (estadoActual === 'Entregado') {
+            return err(res.status(400).json({ message: 'El pedido ya fue entregado' }));
+        }
+        if(estadoActual === 'Invalidado') {
+            return err(res.status(400).json({ message: 'El pedido fue invalidado' }));
+        }
+        orderToConfirm.status = 'Entregado';
+        await orderToConfirm.save();
+        return ok(res.status(200).json({ message: 'Pedido confirmado' }));
+    } catch (error) {
+        return err(res.status(500).json({ message: error.message }));
+    }
+}
+
+
+export const updateOrder = async (req: Request, res: Response) => {
+    
+}

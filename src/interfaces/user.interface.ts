@@ -11,6 +11,7 @@ export interface IUser extends Document{
     address: string;
     token: string;
     slug: string;
+    status: string;
     confirmed: boolean;
     roles: IRol[];
     comparePassword: (password: string) => Promise<boolean>;

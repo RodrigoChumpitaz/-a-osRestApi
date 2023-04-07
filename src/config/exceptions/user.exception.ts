@@ -27,15 +27,19 @@ export class UserListException extends Error{
 
 export class Uservalidators{
     status: number = 400;
-    pattern: RegExp = /^(?=\w*\d)(?=\w*[A-Z])(?=\w*[a-z])\S{6,16}$/;
+    pattern: RegExp = /(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[.#?!@$%^&*-]).{8,}$/;
 
     validateDocumentNumber(type: string, documentNumber: string){
         let message: string;
         if(!type || !documentNumber){ message = 'All fields are required'};
 
-        if(type === 'DNI' || type === 'CE'){
-            if(documentNumber.length != 8){ message = 'The DNI or CE number must have 9 digits'};
-            if(!documentNumber.match(/^[0-9]+$/)){ message = 'The DNI or CE must be a number'};
+        if(type === 'DNI'){
+            if(documentNumber.length != 8){ message = 'The DNI number must have 9 digits'};
+            if(!documentNumber.match(/^[0-9]+$/)){ message = 'The DNI must be a number'};
+        }
+        if(type === 'CE'){
+            if(documentNumber.length != 12){ message = 'The CE number must have 12 digits'};
+            if(!documentNumber.match(/^[0-9]+$/)){ message = 'The CE must be a number'};
         }
         if(type === 'RUC'){
             if(documentNumber.length != 11){ message = 'The RUC number must have 11 digits' };
@@ -61,7 +65,7 @@ export class Uservalidators{
 
     validatePassword(password: string){
         if(!this.pattern.test(password)) return {
-            message: 'The password must have at least 6 characters, 1 uppercase, 1 lowercase, 1 number and 1 special character',
+            message: 'The password must have at least 8 characters, 1 uppercase, 1 lowercase, 1 number and 1 special character',
             status: this.status
         };
         return null;

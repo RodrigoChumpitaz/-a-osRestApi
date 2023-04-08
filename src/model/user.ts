@@ -24,6 +24,10 @@ const userSchema: Schema = new Schema({
     confirmed: { type: Boolean, default: false },
     status: { type: String, default: "active" },
     slug: { type: String },
+    carrito: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Carta'
+    }],
     roles: [{
         type: Schema.Types.ObjectId,
         ref: 'Rol',

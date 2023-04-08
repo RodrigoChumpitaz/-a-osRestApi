@@ -19,10 +19,10 @@ export const createOrderDetail = async (req: Request, res: Response) => {
         let cartByName: Partial<ICarta | Document | any>;
         let newOrder = new Pedido({ deliveryDate, client: { id: user._id, name: user.name, email: user.email, slug: user.slug }, observation });
         await newOrder.save();
-        data.forEach(async (data: any) => {
+        data.forEach(async (dt: any) => {
             let centinel = false;
-            cartByName = await Carta.findOne({ name: data.Cart });
-            let newOrderDetail = new DetallePedido({ order: newOrder._id, Cart: cartByName._id, quantity: data.quantity });
+            cartByName = await Carta.findOne({ name: dt.Cart });
+            let newOrderDetail = new DetallePedido({ order: newOrder._id, Cart: cartByName._id, quantity: dt.quantity });
             await Pedido.findByIdAndUpdate(newOrder._id, { $push: { orderDetail: newOrderDetail._id } });
             if (centinel === false) {
                 await newOrderDetail.save();

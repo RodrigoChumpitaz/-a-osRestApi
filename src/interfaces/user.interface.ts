@@ -1,6 +1,7 @@
 import { Document } from 'mongoose'
 import { IDocumentType } from './documentType.interface';
 import { IRol } from './rol.interface';
+import { ICarta } from './carta.interface';
 export interface IUser extends Document{
     name: string;
     lastname: string;
@@ -13,6 +14,7 @@ export interface IUser extends Document{
     slug: string;
     status: string;
     confirmed: boolean;
+    carrito: ICarta[];
     roles: IRol[];
     comparePassword: (password: string) => Promise<boolean>;
     generatedSlug: () => string;

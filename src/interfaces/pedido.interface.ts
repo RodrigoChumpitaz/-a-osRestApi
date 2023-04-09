@@ -3,6 +3,7 @@ export interface IPedido extends Document {
     imgPrueba: string;
     observation: string;
     status: string;
+    saleType: string;
     client: {
         id: string;
         name: string;

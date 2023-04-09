@@ -1,6 +1,6 @@
 import { Router } from "express";
 import validate from "../../middlewares/checkout";
-import { confirmOrder, createOrder, getOrders, getOrdersByStatus, getOrdersByUser, updateOrder } from "../../controller/orders/pedidos/pedidos.controller";
+import { addCarritoToUser, confirmOrder, createOrder, deleteCartTorCarrito, finalizedOrder, getCarritoByUser, getOrders, getOrdersByStatus, getOrdersByUser, paidOrder, updateOrder } from "../../controller/orders/pedidos/pedidos.controller";
 import { Upload, UploadBuilder, mimetypes } from "../../middlewares/Upload";
 
 const router: Router = Router();
@@ -8,17 +8,26 @@ const router: Router = Router();
 const upload = new Upload();
 
 router.get('/orders', validate ,getOrders)
-router.post('/createOrder', createOrder)
 router.get('/ordersByUser/:id', getOrdersByUser)
-router.patch('/updateOrder/:id', validate, updateOrder)
 router.get('/ordersByStatus/:status', validate, getOrdersByStatus)
+router.post('/createOrder', createOrder)
+router.patch('/updateOrder/:id', validate, updateOrder)
 router.patch('/confirmOrder/:id', upload.save(
     new UploadBuilder()
-        .addMaxSize(5000000)
-        .addFieldName("orderImage")
-        .addAllowedMimeTypes(mimetypes)
-        .addIsPublic(true)
-        .build()
-), confirmOrder)
+    .addMaxSize(5000000)
+    .addFieldName("orderImage")
+    .addAllowedMimeTypes(mimetypes)
+    .addIsPublic(true)
+    .build()
+    ), confirmOrder)
+
+/* FLUJO DE CARRITO */
+router.get('/get-carrito', getCarritoByUser)
+router.post('/add-carrito-to-user/:id', addCarritoToUser)
+router.delete('/delete-cart-to-carrito/:id', deleteCartTorCarrito)
+
+/* PAGOS */
+router.post('/paid-order', paidOrder)
+router.post('/finalized-order/:orderId', finalizedOrder)
 
 export default router;

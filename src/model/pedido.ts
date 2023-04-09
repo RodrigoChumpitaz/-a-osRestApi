@@ -8,6 +8,7 @@ const pedidoSchema = new Schema({
     imgPrueba: { type: String, default: 'https://rod-storage-test.s3.ap-northeast-1.amazonaws.com/default-image-order.png' },
     observation: { type: String, default: 'Sin detalles ni observaciones' },
     status: { type: String, required: true, default: 'Pendiente' },
+    saleType: { type: String, required: true },
     client: {
         id: { type: String, required: true },
         name: { type: String, required: true },

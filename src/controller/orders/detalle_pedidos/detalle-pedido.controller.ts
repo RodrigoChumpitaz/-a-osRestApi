@@ -14,22 +14,22 @@ const verificar = new Verificar()
 export const createOrderDetail = async (req: Request, res: Response) => {
     try {
         const { user_token } = req.headers;
-        const { deliveryDate, observation, data } = req.body;
+        const { deliveryDate, observation, data, saleType } = req.body;
         const user: any = await verificar.decodeToken(user_token); 
         let cartByName: Partial<ICarta | Document | any>;
-        let newOrder = new Pedido({ deliveryDate, client: { id: user._id, name: user.name, email: user.email, slug: user.slug }, observation });
-        await newOrder.save();
+        let newOrder = new Pedido({ deliveryDate, client: { id: user._id, name: user.name, email: user.email, slug: user.slug }, observation, saleType });
+        await newOrder.save();  
         data.forEach(async (dt: any) => {
             let centinel = false;
             cartByName = await Carta.findOne({ name: dt.Cart });
             let newOrderDetail = new DetallePedido({ order: newOrder._id, Cart: cartByName._id, quantity: dt.quantity });
-            await Pedido.findByIdAndUpdate(newOrder._id, { $push: { orderDetail: newOrderDetail._id } });
             if (centinel === false) {
                 await newOrderDetail.save();
             }
+            await Pedido.findByIdAndUpdate(newOrder._id, { $push: { orderDetail: newOrderDetail._id } });
             centinel = true;
         })
-        return ok(res.status(200).json({ message: 'Detalle de pedido creado' }))
+        return ok(res.status(200).json({ message: 'Detalle de pedido creado', orderId: newOrder._id }));
     } catch (error) {
         return err(res.status(500).json({ message: error.message }));
     }

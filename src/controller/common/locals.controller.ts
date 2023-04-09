@@ -10,6 +10,11 @@ const verificar =  new Verificar()
 
 export const getLocals = async (req: Request, res: Response) => {
     try {
+        const { user_token } = req.headers;
+        if(user_token){
+            const locals = await Local.find();
+            return ok(res.status(200).json(locals));
+        }
         const locals = await Local.find({ active: true });
         return ok(res.status(200).json(locals));
     } catch (error) {

@@ -14,6 +14,8 @@ import { ChargeResponse } from 'src/interfaces/charge.interface';
 import Sales from '../../../model/sales';
 import { ISales } from 'src/interfaces/sales.interface';
 import Receipt from '../../../model/receipt';
+import { IDetallePedido } from 'src/interfaces/detalle_pedido';
+import { getReceiptsLenght } from '../../../helpers/get-all-receipts';
 
 const verificar = new Verificar()
 
@@ -181,10 +183,45 @@ export const finalizedOrder = async (req: Request, res: Response) => {
         const _sale: ISales = await Sales.findOne({ orderId })
         const _order: IPedido = await Pedido.findById(orderId);
         if(_order.status === 'Por entregar') return err(res.status(400).json({ message: 'El pedido ya fue finalizado' }));
-        const allReceipts = await Receipt.find();
-        const newReceipt = new Receipt({ orderId, payment: { id: _sale._id, slug: _sale.slug }, igv: 1.18, subtotal: _sale.amount, total: _sale.amount * 1.18, receiptNumber: allReceipts.length + 1})
+        const newReceipt = new Receipt({ orderId, payment: { id: _sale._id, slug: _sale.slug }, igv: 1.18, subtotal: _sale.amount, total: _sale.amount * 1.18, receiptNumber: await getReceiptsLenght() + 1})
         await Pedido.findByIdAndUpdate(orderId, { status: 'Por entregar' });
         await newReceipt.save();
+        return ok(res.status(200).json({ message: 'Pedido finalizado correctamente' }));
+    } catch (error) {
+        return err(res.status(500).json({ message: error.message }));
+    }
+}
+
+export const finalizedDeliveryOrder = async (req: Request, res: Response) => {
+    try {
+        const { orderId } = req.params;
+        const { phoneNumber, reference } = req.body;
+        const _order = await Pedido.findById(orderId);
+        if(!_order || _order === null) return err(res.status(404).json({ message: 'No se encontró el pedido' }));
+        const _user = await User.findById(_order.client.id);
+        let detail: Partial<IDetallePedido>;
+        let cart: Partial<ICarta | Document | any>;
+        let subtotal: number = 0;
+        if(_order.status === 'Entregado') return err(res.status(400).json({ message: 'El pedido ya fue finalizado' }));
+        _order.observation = _order.observation + ` - ${phoneNumber}, ${reference}`;
+        _order.status = 'Por entregar';
+        // _order.orderDetail.forEach(async (item: any) => {
+        //     detail = await DetallePedido.findById(item);
+        //     cart = await Carta.findById(detail.Cart);
+        //     subtotal += cart.price * detail.quantity;
+        // });
+        for(let i in _order.orderDetail) {
+            // console.log(_order.orderDetail[i].toString().substring(0, 24));
+            detail = await DetallePedido.findById(_order.orderDetail[i]);
+            cart = await Carta.findById(detail.Cart);
+            subtotal += cart.price * detail.quantity;
+        }
+        const newSale = new Sales({ orderId: orderId, amount: subtotal, currency: "PEN", paymentId: null, aditional: 10.00 })
+        await User.findByIdAndUpdate(_order.client.id, { carrito: [] });
+        await newSale.save();
+        const newReceipt = new Receipt({ orderId, payment: { id: newSale._id, slug: newSale.slug }, igv: 1.18, subtotal: newSale.amount, total: (newSale.amount * 1.18 + newSale.aditional).toFixed(2), receiptNumber: await getReceiptsLenght() + 1})
+        await newReceipt.save();
+        await _order.save();
         return ok(res.status(200).json({ message: 'Pedido finalizado correctamente' }));
     } catch (error) {
         return err(res.status(500).json({ message: error.message }));

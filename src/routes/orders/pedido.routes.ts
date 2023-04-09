@@ -1,6 +1,6 @@
 import { Router } from "express";
 import validate from "../../middlewares/checkout";
-import { addCarritoToUser, confirmOrder, createOrder, deleteCartTorCarrito, finalizedOrder, getCarritoByUser, getOrders, getOrdersByStatus, getOrdersByUser, paidOrder, updateOrder } from "../../controller/orders/pedidos/pedidos.controller";
+import { addCarritoToUser, confirmOrder, createOrder, deleteCartTorCarrito, finalizedDeliveryOrder, finalizedOrder, getCarritoByUser, getOrders, getOrdersByStatus, getOrdersByUser, paidOrder, updateOrder } from "../../controller/orders/pedidos/pedidos.controller";
 import { Upload, UploadBuilder, mimetypes } from "../../middlewares/Upload";
 
 const router: Router = Router();
@@ -29,5 +29,6 @@ router.delete('/delete-cart-to-carrito/:id', deleteCartTorCarrito)
 /* PAGOS */
 router.post('/paid-order', paidOrder)
 router.post('/finalized-order/:orderId', finalizedOrder)
+router.post('/finalized-delivery-order/:orderId', finalizedDeliveryOrder)
 
 export default router;

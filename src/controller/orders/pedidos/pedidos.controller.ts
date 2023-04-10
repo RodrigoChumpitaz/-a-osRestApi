@@ -205,13 +205,7 @@ export const finalizedDeliveryOrder = async (req: Request, res: Response) => {
         if(_order.status === 'Entregado') return err(res.status(400).json({ message: 'El pedido ya fue finalizado' }));
         _order.observation = _order.observation + ` - ${phoneNumber}, ${reference}`;
         _order.status = 'Por entregar';
-        // _order.orderDetail.forEach(async (item: any) => {
-        //     detail = await DetallePedido.findById(item);
-        //     cart = await Carta.findById(detail.Cart);
-        //     subtotal += cart.price * detail.quantity;
-        // });
         for(let i in _order.orderDetail) {
-            // console.log(_order.orderDetail[i].toString().substring(0, 24));
             detail = await DetallePedido.findById(_order.orderDetail[i]);
             cart = await Carta.findById(detail.Cart);
             subtotal += cart.price * detail.quantity;

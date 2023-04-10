@@ -15,6 +15,7 @@ import cartaRoutes from './routes/carta/carta.routes';
 import emailRoutes from './email/email.routes';
 import pedidosRoutes from './routes/orders/pedido.routes';
 import detailRoutes from './routes/orders/detalle-pedido.routes';
+import salesReceipts from './routes/sales-receipts/sales-receipts.routes'
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from '../swagger.json';
 import pkg from '../package.json';
@@ -56,6 +57,7 @@ app.use('/category', categoryRoutes);
 app.use('/carta', cartaRoutes);
 app.use('/mail', emailRoutes);
 app.use('/orders', pedidosRoutes, detailRoutes);
+app.use('/sales-receipts', salesReceipts)
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 

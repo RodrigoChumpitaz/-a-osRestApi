@@ -6,7 +6,7 @@ const salesSchema = new Schema({
     orderId: { type: Schema.Types.ObjectId, ref: 'Pedido' },
     paymentId: { type: String },
     amount: { type: Number },
-    aditional: { type: Number },
+    aditional: { type: Number, default: 0 },
     paymentMethod: { type: String, default: 'cash' },
     currency: { type: String },
     status: { type: String, default: 'paid' },

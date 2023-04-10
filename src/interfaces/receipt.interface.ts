@@ -12,5 +12,7 @@ export interface IReceipt extends Document{
     discount: number;
     receiptNumber: number;
     slug: string;
+    createdAt: string;
+    updatedAt: string;
     generatedSlug: () => string;
 }

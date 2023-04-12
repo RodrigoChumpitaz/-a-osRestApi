@@ -19,19 +19,6 @@ import { getReceiptsLenght } from '../../../helpers/get-all-receipts';
 
 const verificar = new Verificar()
 
-export const createOrder = async (req: Request, res: Response) => {
-    try {
-        // const { user_token } = req.headers;
-        // const user: any = await verificar.decodeToken(user_token); 
-        // const { observation } = req.body;
-        // const newPedido = new Pedido({ client: { id: user._id, name: user.name, email: user.email, slug: user.slug }, observation });
-        // await newPedido.save();
-        return ok(res.status(200).json({ message: 'Deprecated Endpoint', /* pedido: newPedido */ }));
-    } catch (error) {
-        return err(res.status(500).json({ message: error.message }));
-    }
-}
-
 export const getOrders  = async (req: Request, res: Response) => {
     try {
         const pedidos: Partial<IPedido[] | Document[]> = await Pedido.find().select('-__v -createdAt -updatedAt')
@@ -120,7 +107,29 @@ export const getCarritoByUser = async (req: Request, res: Response) => {
     }
 }
 
-export const addCarritoToUser = async (req: Request, res: Response) => {
+
+export const addAllCartsToCarrito = async (req: Request, res: Response) => {
+    try {
+        const { values } = req.body;
+        const { user_token } = req.headers;
+        const user: Partial<IUser | Document | any> = await verificar.decodeToken(user_token);
+        // let carta: any[] = [];
+        let obj: ICarta | Document | any;
+        values.forEach(async (cart: any) => {
+            let centinell = false;
+            obj = await Carta.findById(cart);
+            if(centinell === false && user.carrito.includes(obj._id) === false) {
+                await User.findByIdAndUpdate(user._id, { $push: { carrito: obj._id } });
+            }
+            centinell = true;
+        })
+        return ok(res.status(200).json({ message: 'Platos agregados al carrito' })); 
+    } catch (error) {
+        return err(res.status(500).json({ message: error.message }));
+    }
+}
+
+/* export const addCarritoToUser = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const { user_token } = req.headers;
@@ -153,7 +162,7 @@ export const deleteCartTorCarrito = async (req: Request, res: Response) => {
     } catch (error) {
         return err(res.status(500).json({ message: error.message }));
     }
-}
+} */
 
 
 /* Flujo de pagos y creacion de ventas */

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import validate from "../../middlewares/checkout";
-import { addCarritoToUser, confirmOrder, createOrder, deleteCartTorCarrito, finalizedDeliveryOrder, finalizedOrder, getCarritoByUser, getOrders, getOrdersByStatus, getOrdersByUser, paidOrder, updateOrder } from "../../controller/orders/pedidos/pedidos.controller";
+import {  addAllCartsToCarrito, confirmOrder, finalizedDeliveryOrder, finalizedOrder, getCarritoByUser, getOrders, getOrdersByStatus, getOrdersByUser, paidOrder, updateOrder } from "../../controller/orders/pedidos/pedidos.controller";
 import { Upload, UploadBuilder, mimetypes } from "../../middlewares/Upload";
 
 const router: Router = Router();
@@ -10,7 +10,6 @@ const upload = new Upload();
 router.get('/orders', validate ,getOrders)
 router.get('/ordersByUser/:id', getOrdersByUser)
 router.get('/ordersByStatus/:status', validate, getOrdersByStatus)
-router.post('/createOrder', createOrder)
 router.patch('/updateOrder/:id', validate, updateOrder)
 router.patch('/confirmOrder/:id', upload.save(
     new UploadBuilder()
@@ -23,8 +22,8 @@ router.patch('/confirmOrder/:id', upload.save(
 
 /* FLUJO DE CARRITO */
 router.get('/get-carrito', getCarritoByUser)
-router.post('/add-carrito-to-user/:id', addCarritoToUser)
-router.delete('/delete-cart-to-carrito/:id', deleteCartTorCarrito)
+router.post('/add-carrito-to-user', addAllCartsToCarrito)
+// router.delete('/delete-cart-to-carrito/:id', deleteCartTorCarrito)
 
 /* PAGOS */
 router.post('/paid-order', paidOrder)

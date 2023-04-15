@@ -19,10 +19,12 @@ import salesReceipts from './routes/sales-receipts/sales-receipts.routes'
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from '../swagger.json';
 import pkg from '../package.json';
+import dotenv from "dotenv";
 
 // inicializaciones
 const app: express.Application = express();  
 const env = environment;
+dotenv.config();
 connect();
 
 // settings

@@ -8,5 +8,6 @@ export const connect = async () => {
         console.log(`Connect to ${mongoose.connection.name}`);
     } catch (error) {
         console.log(error);
+        mongoose.disconnect();
     }
 }

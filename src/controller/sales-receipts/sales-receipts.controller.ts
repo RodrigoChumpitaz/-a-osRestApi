@@ -64,3 +64,181 @@ export const generatedReceipts = async (req: Request, res: Response) => {
         return err(res.status(500).json({ message: error.message }));
     }
 }
+
+//  REPORTES
+export const getSalesByDate = async (req: Request, res: Response) => {
+    try {
+        let fechaInicio: any = req.query.fechaInicio;
+        let fechaFin: any = req.query.fechaFin;
+        fechaInicio = new Date(fechaInicio);
+        fechaFin = new Date(fechaFin);
+        if(fechaInicio === null || fechaFin === null) {
+            const sales = await Sales.find();
+            return ok(res.status(200).json(sales));
+        }
+        const sales = await Sales.find({ createdAt: { $gte: fechaInicio, $lt: fechaFin } }).select('-__v -updatedAt');
+        return ok(res.status(200).json(sales));
+    } catch (error) {
+        return err(res.status(500).json({ message: error.message }));
+    }
+}
+
+export const salePerDay = async (req: Request, res: Response) => {
+    try {
+        const resultados = await Sales.aggregate([
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                    total: { $sum: "$amount" }
+                }
+            },
+            {
+                $sort: { _id: 1 }
+            }
+        ])
+        return ok(res.status(200).json(resultados));
+    } catch (error) {
+        return err(res.status(500).json({ message: error.message }));
+    }
+}
+
+export const topProductSale = async (req: Request, res: Response) => {
+    try {
+        const sales = await Sales.find();
+        const details = await DetallePedido.find();
+        const resultados = await DetallePedido.aggregate([
+            {
+                $group: {
+                    _id: "$Cart",
+                    total: { $sum: "$quantity" }
+                }
+            },
+            {
+                $lookup: {
+                    from: "cartas",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "carta"
+                }
+            },
+            {
+                $unwind: "$carta"
+            },
+            {
+                $project: {
+                    _id: '$_id',
+                    name: "$carta.name",
+                    total: details.length
+                }
+            },
+            {
+                $sort: { total: 1 }
+            }
+        ])
+        return ok(res.status(200).json(resultados));
+    } catch (error) {
+        return err(res.status(500).json({ message: error.message }));
+    }
+}
+
+export const detailSaleByDate = async (req: Request, res: Response) => {
+    try {
+        const results = await DetallePedido.aggregate([
+            {
+                $lookup: {
+                    from: "cartas",
+                    localField: "Cart",
+                    foreignField: "_id",
+                    as: "carta"
+                }
+            },
+            {
+                $unwind: "$carta"
+            },
+            {
+                $group: {
+                    _id: {
+                        fecha: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                        carta: "$carta.name"
+                    },
+                    total: { $sum: "$quantity" },
+                    cantidadVentas: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { "_id.fecha": 1, "_id.carta": 1 }
+            }
+        ]);
+        return ok(res.status(200).json(results));
+    } catch (error) {
+        return err(res.status(500).json({ message: error.message }));
+    }
+}
+
+export const countDetailsByCategory = async (req: Request, res: Response) => {
+    try {
+        const results = await DetallePedido.aggregate([
+            {
+                $lookup: {
+                    from: "cartas",
+                    localField: "Cart",
+                    foreignField: "_id",
+                    as: "carta"
+                }
+            },
+            {
+                $unwind: "$carta"
+            },
+            {
+                $group: {
+                    _id: "$carta.category.name",
+                    total: { $sum: "$quantity" }
+                }
+            }
+        ]);
+        return ok(res.status(200).json(results));
+    } catch (error) {
+        return err(res.status(500).json({ message: error.message }));
+    }
+}
+
+export const totalSalesByClient = async (req: Request, res: Response) => {
+    try {
+        let fechaInicio: any = req.query.fechaInicio;
+        let fechaFin: any = req.query.fechaFin;
+        fechaInicio = new Date(fechaInicio);
+        fechaFin = new Date(fechaFin);
+        const results = await Sales.aggregate([
+            // {
+            //     $match: {
+            //         fecha: { $gte: new Date('2023-04-08'), $lt: new Date('2023-04-11') }
+            //     }
+            // },
+            {
+                $lookup: {
+                    from: "pedidos",
+                    localField: "orderId",
+                    foreignField: "_id",
+                    as: "pedido"
+                }
+            },
+            {
+                $unwind: "$pedido"
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                    cliente: { $first: "$pedido.client.name" },
+                    monto: { $sum: "$amount" },
+                    ventas: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { ventas: -1 }
+            }
+        ]);
+        return ok(res.status(200).json(results));
+    } catch (error) {
+        return err(res.status(500).json({ message: error.message }));
+    }
+}

@@ -113,56 +113,14 @@ export const addAllCartsToCarrito = async (req: Request, res: Response) => {
         const { values } = req.body;
         const { user_token } = req.headers;
         const user: Partial<IUser | Document | any> = await verificar.decodeToken(user_token);
-        // let carta: any[] = [];
-        let obj: ICarta | Document | any;
-        values.forEach(async (cart: any) => {
-            let centinell = false;
-            obj = await Carta.findById(cart);
-            if(centinell === false && user.carrito.includes(obj._id) === false) {
-                await User.findByIdAndUpdate(user._id, { $push: { carrito: obj._id } });
-            }
-            centinell = true;
-        })
+        if(values.length === 0) return err(res.status(400).json({ message: 'No hay platos para agregar al carrito' }));
+        if(!user || user === null) return err(res.status(404).json({ message: 'No se encontró el usuario' }));
+        await User.findByIdAndUpdate(user._id, { carrito: values });
         return ok(res.status(200).json({ message: 'Platos agregados al carrito' })); 
     } catch (error) {
         return err(res.status(500).json({ message: error.message }));
     }
 }
-
-/* export const addCarritoToUser = async (req: Request, res: Response) => {
-    try {
-        const { id } = req.params;
-        const { user_token } = req.headers;
-        const cartToId = await Carta.findById(id).select('-__v -createdAt -updatedAt');
-        if(!cartToId || cartToId === null) return err(res.status(404).json({ message: 'No se encontró el producto' }));
-        const user: Partial<IUser | Document | any> = await verificar.decodeToken(user_token);
-        if(user.carrito.includes(cartToId._id)) {
-            return err(res.status(400).json({ message: 'El producto ya se encuentra en el carrito' }));
-        }
-        await User.findByIdAndUpdate(user._id, { $push: { carrito: cartToId._id } });
-        return ok(res.status(200).json({ message: 'Producto agregado al carrito' }));
-    } catch (error) {
-        return err(res.status(500).json({ message: error.message }));
-    }
-}
-
-
-export const deleteCartTorCarrito = async (req: Request, res: Response) => {
-    try {
-        const { id } =  req.params;
-        const { user_token } = req.headers;
-        const cartToId = await Carta.findById(id).select('-__v -createdAt -updatedAt');
-        if(!cartToId || cartToId === null) return err(res.status(404).json({ message: 'No se encontró el producto' }));
-        const user: Partial<IUser | Document | any> = await verificar.decodeToken(user_token);
-        if(!user.carrito.includes(cartToId._id)){
-            return err(res.status(400).json({ message: 'El producto no se encuentra en el carrito' }));
-        }
-        await User.findByIdAndUpdate(user._id, { $pull: { carrito: cartToId._id } });
-        return ok(res.status(200).json({ message: 'Producto eliminado del carrito' }));
-    } catch (error) {
-        return err(res.status(500).json({ message: error.message }));
-    }
-} */
 
 
 /* Flujo de pagos y creacion de ventas */
@@ -207,7 +165,6 @@ export const finalizedDeliveryOrder = async (req: Request, res: Response) => {
         const { phoneNumber, reference } = req.body;
         const _order = await Pedido.findById(orderId);
         if(!_order || _order === null) return err(res.status(404).json({ message: 'No se encontró el pedido' }));
-        const _user = await User.findById(_order.client.id);
         let detail: Partial<IDetallePedido>;
         let cart: Partial<ICarta | Document | any>;
         let subtotal: number = 0;

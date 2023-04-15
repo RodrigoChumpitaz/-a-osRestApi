@@ -113,7 +113,6 @@ export const addAllCartsToCarrito = async (req: Request, res: Response) => {
         const { values } = req.body;
         const { user_token } = req.headers;
         const user: Partial<IUser | Document | any> = await verificar.decodeToken(user_token);
-        if(values.length === 0) return err(res.status(400).json({ message: 'No hay platos para agregar al carrito' }));
         if(!user || user === null) return err(res.status(404).json({ message: 'No se encontró el usuario' }));
         await User.findByIdAndUpdate(user._id, { carrito: values });
         return ok(res.status(200).json({ message: 'Platos agregados al carrito' })); 
@@ -122,13 +121,13 @@ export const addAllCartsToCarrito = async (req: Request, res: Response) => {
     }
 }
 
-
 /* Flujo de pagos y creacion de ventas */
 export const paidOrder = async (req: Request, res: Response) => {
     try {
         const { charge, orderId } = req.body;
         const _order = await Pedido.findById(orderId);
         if(!_order || _order === null) return err(res.status(404).json({ message: 'No hay un pedido pendiente' }));
+        if(_order.status === 'Pagado' || _order.status === 'Por entregar') return err(res.status(400).json({ message: 'El pedido ya fue pagado' }));
         const data: ChargeResponse = charge; 
         if(!data.id){
             return err(res.status(400).json({ message: 'No se pudo procesar el pago' }));

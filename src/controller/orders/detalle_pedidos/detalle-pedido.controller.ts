@@ -17,7 +17,7 @@ export const createOrderDetail = async (req: Request, res: Response) => {
         const { deliveryDate, observation, data, saleType } = req.body;
         const user: any = await verificar.decodeToken(user_token); 
         let cartByName: Partial<ICarta | Document | any>;
-        let newOrder = new Pedido({ deliveryDate, client: { id: user._id, name: user.name, email: user.email, slug: user.slug }, observation, saleType });
+        let newOrder = new Pedido({ deliveryDate: new Date(deliveryDate), client: { id: user._id, name: user.name, email: user.email, slug: user.slug }, observation, saleType });
         await newOrder.save();  
         data.forEach(async (dt: any) => {
             let centinel = false;

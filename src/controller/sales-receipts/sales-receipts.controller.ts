@@ -72,12 +72,28 @@ export const getSalesByDate = async (req: Request, res: Response) => {
         let fechaFin: any = req.query.fechaFin;
         fechaInicio = new Date(fechaInicio);
         fechaFin = new Date(fechaFin);
-        if(fechaInicio === null || fechaFin === null) {
-            const sales = await Sales.find();
-            return ok(res.status(200).json(sales));
-        }
-        const sales = await Sales.find({ createdAt: { $gte: fechaInicio, $lt: fechaFin } }).select('-__v -updatedAt');
-        return ok(res.status(200).json(sales));
+        const results = await Sales.aggregate([
+            {
+                $match: {
+                    createdAt: {
+                        $gte: fechaInicio,
+                        $lte: fechaFin
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                    currency: { $first: "$currency" },
+                    aditional: { $first: "$aditional" },
+                    total: { $sum: "$amount" }
+                }
+            },
+            {
+                $sort: { _id: 1 }
+            }
+        ]);
+        return ok(res.status(200).json(results));
     } catch (error) {
         return err(res.status(500).json({ message: error.message }));
     }
@@ -87,13 +103,53 @@ export const salePerDay = async (req: Request, res: Response) => {
     try {
         const resultados = await Sales.aggregate([
             {
-                $group: {
-                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-                    total: { $sum: "$amount" }
+                $lookup: {
+                    from: "pedidos",
+                    localField: "orderId",
+                    foreignField: "_id",
+                    as: "order"
                 }
             },
             {
-                $sort: { _id: 1 }
+                $unwind: "$order"
+            },
+            {
+                $lookup: {
+                    from: "detallepedidos",
+                    localField: "order.orderDetail",
+                    foreignField: "_id",
+                    as: "orderDetail"
+                }
+            },
+            {
+                $unwind: "$orderDetail"
+            },
+            {
+                $lookup: {
+                    from: "cartas",
+                    localField: "orderDetail.Cart",
+                    foreignField: "_id",
+                    as: "carta"
+                }
+            },
+            {
+                $unwind: "$carta"
+            },
+            {
+                $group: {
+                    _id: { 
+                        name: "$carta.name",
+                    },
+                    sales:{
+                        $push: {
+                            name: { $dateToString: { date: "$createdAt", format: "%Y-%m-%d" } },
+                            value: "$amount"
+                        }
+                    }
+                }
+            },
+            {
+                $sort: { _id: -1 }
             }
         ])
         return ok(res.status(200).json(resultados));
@@ -158,11 +214,14 @@ export const detailSaleByDate = async (req: Request, res: Response) => {
             {
                 $group: {
                     _id: {
-                        fecha: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
                         carta: "$carta.name"
                     },
-                    total: { $sum: "$quantity" },
-                    cantidadVentas: { $sum: 1 }
+                    data:{
+                        $push: {
+                            name: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                            value: { $sum: "$quantity"}
+                        }
+                    }
                 }
             },
             {
@@ -194,6 +253,9 @@ export const countDetailsByCategory = async (req: Request, res: Response) => {
                     _id: "$carta.category.name",
                     total: { $sum: "$quantity" }
                 }
+            },
+            {
+                $sort: { total: 1 }
             }
         ]);
         return ok(res.status(200).json(results));
@@ -209,11 +271,6 @@ export const totalSalesByClient = async (req: Request, res: Response) => {
         fechaInicio = new Date(fechaInicio);
         fechaFin = new Date(fechaFin);
         const results = await Sales.aggregate([
-            // {
-            //     $match: {
-            //         fecha: { $gte: new Date('2023-04-08'), $lt: new Date('2023-04-11') }
-            //     }
-            // },
             {
                 $lookup: {
                     from: "pedidos",
@@ -227,14 +284,19 @@ export const totalSalesByClient = async (req: Request, res: Response) => {
             },
             {
                 $group: {
-                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-                    cliente: { $first: "$pedido.client.name" },
-                    monto: { $sum: "$amount" },
-                    ventas: { $sum: 1 }
+                    _id: { 
+                        name: "$pedido.client.name",
+                    },
+                    series: {
+                        $push: {
+                            name: { $dateToString: { date: "$createdAt", format: "%Y-%m-%d" } },
+                            value: "$amount"
+                        }
+                    },
                 }
             },
             {
-                $sort: { ventas: -1 }
+                $sort: { "series.name": 1 }
             }
         ]);
         return ok(res.status(200).json(results));

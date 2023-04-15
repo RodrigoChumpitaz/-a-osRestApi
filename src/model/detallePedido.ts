@@ -3,7 +3,6 @@ import { getSlug } from '../helpers/create-strings';
 import { IDetallePedido } from 'src/interfaces/detalle_pedido';
 
 const detallePedidoSchema = new Schema({
-    detail: { type: String },
     Cart: { type: Schema.Types.ObjectId, ref: 'Carta' },
     order: { type: Schema.Types.ObjectId, ref: 'Pedido' },
     quantity: { type: Number, default: 1 },

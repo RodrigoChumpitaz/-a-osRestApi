@@ -7,7 +7,7 @@
     "dev": "nodemon src/index.ts",
     "test": "jest --detectOpenHandles",
     "build": "tsc ",
-    "start":"node cache/src/index.js"
+    "start": "node cache/src/index.js"
   },
   "keywords": [],
   "author": "",
@@ -29,6 +29,7 @@
     "nodemailer": "^6.9.1",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
+    "phantomjs-prebuilt": "^2.1.16",
     "swagger-ui-express": "^4.6.0",
     "yenv": "^3.0.1"
   },

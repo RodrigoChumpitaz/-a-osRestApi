@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon src/index.ts",
     "test": "jest --detectOpenHandles",
-    "build": "tsc "
+    "build": "tsc ",
+    "start":"node cache/src/index.js"
   },
   "keywords": [],
   "author": "",

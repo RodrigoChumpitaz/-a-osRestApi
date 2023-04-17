@@ -6,7 +6,7 @@ import { IDistrito } from "../interfaces/distrito.interface";
 const distritoSchema: Schema =  new Schema({
     nombre: { type: String, required: [true, 'El nombre es necesario'], unique: true },
     slug: { type: String },
-    active: { type: Boolean, default: false },
+    active: { type: Boolean, default: true },
     locals: [ { type: Schema.Types.ObjectId, ref: 'Local' } ]
 },{
     timestamps: true

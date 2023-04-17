@@ -30,7 +30,7 @@ export const createOrderDetail = async (req: Request, res: Response) => {
             await Pedido.findByIdAndUpdate(newOrder._id, { $push: { orderDetail: newOrderDetail._id } });
             centinel = true;
         })
-        return ok(res.status(200).json({ message: 'Detalle de pedido creado', /* orderId: newOrder._id */ }));
+        return ok(res.status(200).json({ message: 'Detalle de pedido creado', orderId: newOrder._id }));
     } catch (error) {
         return err(res.status(500).json({ message: error.message }));
     }

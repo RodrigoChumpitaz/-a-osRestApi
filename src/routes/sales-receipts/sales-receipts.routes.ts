@@ -1,9 +1,10 @@
 import { Router } from 'express';
-import { countDetailsByCategory, detailSaleByDate, generatedReceipts, getReceipts, getSalesByDate, salePerDay, topProductSale, totalSalesByClient } from '../../controller/sales-receipts/sales-receipts.controller';
+import { countDetailsByCategory, detailSaleByDate, generatedReceipts, getReceiptTById, getReceipts, getSalesByDate, salePerDay, topProductSale, totalSalesByClient } from '../../controller/sales-receipts/sales-receipts.controller';
 
 const router = Router();
 
 router.get('/generated-receipt', getReceipts)
+router.get('/generated-receipt/:id', getReceiptTById)
 router.get('/generated-receipt/:receiptId', generatedReceipts)
 
 

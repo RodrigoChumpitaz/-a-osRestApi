@@ -5,7 +5,7 @@ import { addDistritosMasive, getDistritosLima } from "../../controller/common/di
 const router: Router = Router();
 
 
-router.get('/distritos', validate, getDistritosLima);
-router.post('/addMasive', validate, addDistritosMasive)
+router.get('/distritos', getDistritosLima);
+router.post('/addMasive', addDistritosMasive)
 
 export default router;

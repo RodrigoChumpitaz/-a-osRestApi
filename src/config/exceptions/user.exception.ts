@@ -34,7 +34,7 @@ export class Uservalidators{
         if(!type || !documentNumber){ message = 'All fields are required'};
 
         if(type === 'DNI'){
-            if(documentNumber.length != 8){ message = 'The DNI number must have 9 digits'};
+            if(documentNumber.length != 8){ message = 'The DNI number must have 8 digits'};
             if(!documentNumber.match(/^[0-9]+$/)){ message = 'The DNI must be a number'};
         }
         if(type === 'CE'){

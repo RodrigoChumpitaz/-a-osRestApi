@@ -53,7 +53,7 @@ export const getOrderToDeliver = async (req: Request, res: Response) => {
 
 export const getOrderEntregado = async (req: Request, res: Response) => {
     try {
-        const pedidosPorEntregar = await Pedido.find({ status: 'Entregado', saleType: 'Delivery' || 'delivery' })
+        const pedidosPorEntregar = await Pedido.find({ status: 'Entregado', saleType: 'delivery' })
             .populate({ path: 'orderDetail', select: 'detail Cart quantity', populate: { path: 'Cart', select: 'category.name name price descrption' } })
             .select('-__v -createdAt -updatedAt')
         const mapp = pedidosPorEntregar.map((pedido) => {
@@ -138,6 +138,23 @@ export const getOrdersByStatus = async (req: Request, res: Response) => {
     }
 }
 
+export const cancelOrder = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const orderToCancel = await Pedido.findById(id);
+        if(!orderToCancel || orderToCancel === null) return err(res.status(404).json({ message: 'No se encontró el pedido' }));
+        if(orderToCancel.status === 'Entregado') {
+            return err(res.status(400).json({ message: 'El pedido no puede ser invalidado, ya que está entregado' }));
+        } 
+        if(orderToCancel.status === 'Invalidado') return err(res.status(400).json({ message: 'El pedido ya fue invalidado' }));
+        if(orderToCancel.status === 'Por Entregar' || orderToCancel.status === 'Pagado') return err(res.status(400).json({ message: 'El pedido ya fue cancelado' }));
+        await Pedido.findByIdAndUpdate(orderToCancel._id, { status: 'Invalidado', observation: 'Pedido invalidado por el cliente' });
+        return ok(res.status(200).json({ message: 'Pedido invalidado' }));
+    } catch (error) {
+        return err(res.status(500).json({ message: error.message }));
+    }
+}
+
 /* FLUJO DE CARRITO E INICIO DEL PEDIDO */
 
 export const getCarritoByUser = async (req: Request, res: Response) => {
@@ -196,7 +213,7 @@ export const finalizedOrder = async (req: Request, res: Response) => {
         const _sale: ISales = await Sales.findOne({ orderId })
         const _order: IPedido = await Pedido.findById(orderId);
         if(_order.status === 'Por entregar') return err(res.status(400).json({ message: 'El pedido ya fue finalizado' }));
-        const newReceipt = new Receipt({ orderId, payment: { id: _sale._id, slug: _sale.slug }, igv: 1.18, subtotal: _sale.amount, total: _sale.amount * 1.18, receiptNumber: await getReceiptsLenght() + 1})
+        const newReceipt = new Receipt({ orderId, payment: { id: _sale._id, slug: _sale.slug }, igv: 1.18, subtotal: _sale.amount, total: _sale.amount, receiptNumber: await getReceiptsLenght() + 1})
         await Pedido.findByIdAndUpdate(orderId, { status: 'Por entregar' });
         await newReceipt.save();
         return ok(res.status(200).json({ message: 'Pedido finalizado correctamente', receiptId: newReceipt._id }));
@@ -223,10 +240,9 @@ export const finalizedDeliveryOrder = async (req: Request, res: Response) => {
             cart = await Carta.findById(detail.Cart);
             subtotal += cart.price * detail.quantity;
         }
-        const newSale = new Sales({ orderId: orderId, amount: subtotal, currency: "PEN", paymentId: null, aditional: 10.00 })
+        let orderSale = await Sales.findOne({ orderId })
         await User.findByIdAndUpdate(_order.client.id, { carrito: [] });
-        await newSale.save();
-        const newReceipt = new Receipt({ orderId, payment: { id: newSale._id, slug: newSale.slug }, igv: 1.18, subtotal: newSale.amount, total: (newSale.amount * 1.18 + newSale.aditional).toFixed(2), receiptNumber: await getReceiptsLenght() + 1})
+        const newReceipt = new Receipt({ orderId, payment: { id: orderSale._id, slug: orderSale.slug }, igv: 1.18, subtotal: orderSale.amount, total: (orderSale.amount + orderSale.aditional).toFixed(2), receiptNumber: await getReceiptsLenght() + 1})
         await newReceipt.save();
         await _order.save();
         return ok(res.status(200).json({ message: 'Pedido finalizado correctamente', receiptId: newReceipt._id }));

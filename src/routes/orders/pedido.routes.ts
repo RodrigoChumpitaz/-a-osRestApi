@@ -1,6 +1,6 @@
 import { Router } from "express";
 import validate from "../../middlewares/checkout";
-import {  addAllCartsToCarrito, confirmOrder, finalizedDeliveryOrder, finalizedOrder, getCarritoByUser, getOrderEntregado, getOrderToDeliver, getOrders, getOrdersByStatus, getOrdersByUser, paidOrder, updateOrder } from "../../controller/orders/pedidos/pedidos.controller";
+import {  addAllCartsToCarrito, cancelOrder, confirmOrder, finalizedDeliveryOrder, finalizedOrder, getCarritoByUser, getOrderEntregado, getOrderToDeliver, getOrders, getOrdersByStatus, getOrdersByUser, paidOrder, updateOrder } from "../../controller/orders/pedidos/pedidos.controller";
 import { Upload, UploadBuilder, mimetypes } from "../../middlewares/Upload";
 
 const router: Router = Router();
@@ -10,6 +10,7 @@ const upload = new Upload();
 router.get('/orders', validate ,getOrders)
 router.get('/ordersByUser/:id', getOrdersByUser)
 router.get('/ordersToDeliver', getOrderToDeliver)
+router.patch('/cancelOrder/:id', cancelOrder)
 router.get('/ordersToDeliverEntregado', getOrderEntregado)
 router.get('/ordersByStatus/:status', validate, getOrdersByStatus)
 router.patch('/updateOrder/:id', validate, updateOrder)

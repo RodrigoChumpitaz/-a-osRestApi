@@ -22,7 +22,7 @@ export const getCategorias = async (req: Request, res: Response) => {
 export const addCategoria = async (req: Request, res: Response) => {
     try {
         const { description } = req.body;
-        if(!description) return err(res.status(400).json({ message: 'Description is required' }));
+        if(!description || description === '') return err(res.status(400).json({ message: 'Description is required' }));
         if(req.file){
             const file: Partial<FileResponse> = req.file;
             const newCategoria = new Categoria({ description, imgUrl: file.location });

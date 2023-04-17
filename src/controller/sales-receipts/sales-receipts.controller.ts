@@ -308,9 +308,36 @@ export const totalSalesByClient = async (req: Request, res: Response) => {
 
 export const getReceipts = async (req: Request, res: Response) => {
     try {
-        const receipts = await Receipt.find();
-        return ok(res.status(200).json(receipts));
+        const receipts: IReceipt[] = await Receipt.find();
+        let _sales: ISales[] = await Sales.find();
+        const mapp = receipts.map((rc) => {
+            const sale = _sales.find((s) => s.slug === rc.payment.slug);
+            return {
+                _id: rc._id,
+                paymentCode: sale.paymentId,
+                orderId: rc.orderId,
+                igv: rc.igv,
+                subtotal: rc.subtotal,
+                discount: rc.discount,
+                aditional: sale.aditional,
+                total: rc.total.toFixed(2),
+                state: sale.status,
+                receiptNumber: rc.receiptNumber,
+            };
+        })
+        return ok(res.status(200).json(mapp));
     } catch (error) {
         return err(res.status(500).json({ message: error.message }));
     }
 }
+
+export const getReceiptTById = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const receipt = await Receipt.findById(id);
+        return ok(res.status(200).json(receipt));
+    } catch (error) {
+        return err(res.status(500).json({ message: error.message }));
+    }
+}
+

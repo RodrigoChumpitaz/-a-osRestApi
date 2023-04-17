@@ -11,7 +11,6 @@ import { err, ok } from "neverthrow";
 export const getCarts = async (req: Request, res: Response) => {
     try {
         const carts: ICarta[] = await Carta.find();
-        if(carts.length === 0) return res.status(404).json({ message: 'No records' });
         return res.status(200).json(carts);
     } catch (error) {
         return res.status(500).json({ message: error.message });

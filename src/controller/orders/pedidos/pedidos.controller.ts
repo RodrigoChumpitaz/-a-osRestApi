@@ -147,7 +147,7 @@ export const cancelOrder = async (req: Request, res: Response) => {
             return err(res.status(400).json({ message: 'El pedido no puede ser invalidado, ya que está entregado' }));
         } 
         if(orderToCancel.status === 'Invalidado') return err(res.status(400).json({ message: 'El pedido ya fue invalidado' }));
-        if(orderToCancel.status === 'Por Entregar' || orderToCancel.status === 'Pagado') return err(res.status(400).json({ message: 'El pedido ya fue cancelado' }));
+        if(orderToCancel.status === 'Por entregar' || orderToCancel.status === 'Pagado') return err(res.status(400).json({ message: 'El pedido ya fue cancelado' }));
         await Pedido.findByIdAndUpdate(orderToCancel._id, { status: 'Invalidado', observation: 'Pedido invalidado por el cliente' });
         return ok(res.status(200).json({ message: 'Pedido invalidado' }));
     } catch (error) {
@@ -196,8 +196,11 @@ export const paidOrder = async (req: Request, res: Response) => {
         if(!data.id){
             return err(res.status(400).json({ message: 'No se pudo procesar el pago' }));
         }
-        const orderAmount = data.amount.toString().substring(0, data.amount.toString().length - 2) + ".00";
+        const orderAmount = (data.amount / 100).toFixed(2);
         const newSale = new Sales({ orderId: orderId, amount: orderAmount, currency: data.currency_code, paymentId: data.id })
+        if(_order.saleType === 'delivery') {
+            newSale.aditional = 10;
+        }
         await Pedido.findByIdAndUpdate(orderId, { status: 'Pagado' });
         await User.findByIdAndUpdate(_order.client.id, { carrito: [] });
         await newSale.save();
@@ -242,7 +245,7 @@ export const finalizedDeliveryOrder = async (req: Request, res: Response) => {
         }
         let orderSale = await Sales.findOne({ orderId })
         await User.findByIdAndUpdate(_order.client.id, { carrito: [] });
-        const newReceipt = new Receipt({ orderId, payment: { id: orderSale._id, slug: orderSale.slug }, igv: 1.18, subtotal: orderSale.amount, total: (orderSale.amount + orderSale.aditional).toFixed(2), receiptNumber: await getReceiptsLenght() + 1})
+        const newReceipt = new Receipt({ orderId, payment: { id: orderSale._id, slug: orderSale.slug }, igv: 1.18, subtotal: orderSale.amount, total: (orderSale.amount).toFixed(2), receiptNumber: await getReceiptsLenght() + 1})
         await newReceipt.save();
         await _order.save();
         return ok(res.status(200).json({ message: 'Pedido finalizado correctamente', receiptId: newReceipt._id }));

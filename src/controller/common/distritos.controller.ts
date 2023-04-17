@@ -19,7 +19,7 @@ export const getDistritosLima = async(req: Request, res: Response): Promise<any>
         //     count: distritos.length,
         //     data: distritos
         // })
-        const distritos: IDistrito[] = await Distrito.find({ active: true }).populate({ "path": "locals", "select": "-distrito -createdAt -updatedAt -__v" });
+        const distritos: IDistrito[] = await Distrito.find().populate({ "path": "locals", "select": "-distrito -createdAt -updatedAt -__v" });
         return ok(res.status(200).json(
             // originalData: distritosToApi,
             distritos

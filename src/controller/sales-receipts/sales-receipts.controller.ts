@@ -304,3 +304,13 @@ export const totalSalesByClient = async (req: Request, res: Response) => {
         return err(res.status(500).json({ message: error.message }));
     }
 }
+
+
+export const getReceipts = async (req: Request, res: Response) => {
+    try {
+        const receipts = await Receipt.find();
+        return ok(res.status(200).json(receipts));
+    } catch (error) {
+        return err(res.status(500).json({ message: error.message }));
+    }
+}

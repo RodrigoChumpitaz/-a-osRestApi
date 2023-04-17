@@ -184,12 +184,15 @@ export const comprobarToken = async (req: Request, res: Response) => {
 }
 
 export const cambiarPassword = async (req: Request, res: Response) => {
-    const { new_token } = req.params;
-    const { password } = req.body;
-    const userToken = await User.findOne({ token: new_token });
-    console.log(userToken);
-    if(!userToken) return res.status(400).json({ msg: 'The token is not valid or dont match the users' });
     try {
+        const { new_token } = req.params;
+        const { password } = req.body;
+        const userToken = await User.findOne({ token: new_token });
+        console.log(userToken);
+        if(!userToken) return res.status(400).json({ msg: 'The token is not valid or dont match the users' });
+        if(validator.validatePassword(password) != null) {
+            return res.status(validator.status).json({ msg: validator.validatePassword(password).message });
+        }
         userToken.token = null;
         userToken.password = password;
         userToken.confirmed = true;
@@ -216,6 +219,9 @@ export const updateUserById = async (req: Request, res: Response) => {
             userById.password = userById.password;
         }
         else{
+            if(validator.validatePassword(password) != null) {
+                return res.status(validator.status).json({ msg: validator.validatePassword(password).message, success: false });
+            }
             userById.password = password.trim();
         }
         if(roles){

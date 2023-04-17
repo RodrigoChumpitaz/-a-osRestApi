@@ -30,6 +30,51 @@ export const getOrders  = async (req: Request, res: Response) => {
 }
 
 
+export const getOrderToDeliver = async (req: Request, res: Response) => {
+    try {
+        const pedidosPorEntregar = await Pedido.find({ status: 'Por entregar', saleType: 'delivery' })
+            .populate({ path: 'orderDetail', select: 'detail Cart quantity', populate: { path: 'Cart', select: 'category.name name price descrption' } })
+            .select('-__v -createdAt -updatedAt')
+        const mapp = pedidosPorEntregar.map((pedido) => {
+            return {
+                id: pedido._id,
+                cliente: pedido.client.name,
+                fecha_entrega: pedido.deliveryDate,
+                estado: pedido.status,
+                tipo_venta: pedido.saleType,
+                observación: pedido.observation
+            }
+        })
+        return ok(res.status(200).json(mapp));
+    } catch (error) {
+        return err(res.status(500).json({ message: error.message }));
+    }
+}
+
+export const getOrderEntregado = async (req: Request, res: Response) => {
+    try {
+        const pedidosPorEntregar = await Pedido.find({ status: 'Entregado', saleType: 'Delivery' || 'delivery' })
+            .populate({ path: 'orderDetail', select: 'detail Cart quantity', populate: { path: 'Cart', select: 'category.name name price descrption' } })
+            .select('-__v -createdAt -updatedAt')
+        const mapp = pedidosPorEntregar.map((pedido) => {
+            return {
+                id: pedido._id,
+                cliente: pedido.client.name,
+                fecha_entrega: pedido.deliveryDate,
+                estado: pedido.status,
+                tipo_venta: pedido.saleType,
+                observación: pedido.observation
+            }
+        })
+        return ok(res.status(200).json(mapp));
+    } catch (error) {
+        return err(res.status(500).json({ message: error.message }));
+    }
+}
+
+
+
+
 export const getOrdersByUser = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
@@ -115,7 +160,7 @@ export const addAllCartsToCarrito = async (req: Request, res: Response) => {
         const user: Partial<IUser | Document | any> = await verificar.decodeToken(user_token);
         if(!user || user === null) return err(res.status(404).json({ message: 'No se encontró el usuario' }));
         await User.findByIdAndUpdate(user._id, { carrito: values });
-        return ok(res.status(200).json({ message: 'Platos agregados al carrito' })); 
+        return ok(res.status(200).json({ message: 'Carrito actualizado' })); 
     } catch (error) {
         return err(res.status(500).json({ message: error.message }));
     }
@@ -125,6 +170,8 @@ export const addAllCartsToCarrito = async (req: Request, res: Response) => {
 export const paidOrder = async (req: Request, res: Response) => {
     try {
         const { charge, orderId } = req.body;
+        const { user_token } = req.headers;
+        if(!user_token || user_token === '' || user_token === null) return err(res.status(400).json({ message: 'No se encontró el token de usuario' }));
         const _order = await Pedido.findById(orderId);
         if(!_order || _order === null) return err(res.status(404).json({ message: 'No hay un pedido pendiente' }));
         if(_order.status === 'Pagado' || _order.status === 'Por entregar') return err(res.status(400).json({ message: 'El pedido ya fue pagado' }));
@@ -152,7 +199,7 @@ export const finalizedOrder = async (req: Request, res: Response) => {
         const newReceipt = new Receipt({ orderId, payment: { id: _sale._id, slug: _sale.slug }, igv: 1.18, subtotal: _sale.amount, total: _sale.amount * 1.18, receiptNumber: await getReceiptsLenght() + 1})
         await Pedido.findByIdAndUpdate(orderId, { status: 'Por entregar' });
         await newReceipt.save();
-        return ok(res.status(200).json({ message: 'Pedido finalizado correctamente' }));
+        return ok(res.status(200).json({ message: 'Pedido finalizado correctamente', receiptId: newReceipt._id }));
     } catch (error) {
         return err(res.status(500).json({ message: error.message }));
     }
@@ -167,7 +214,8 @@ export const finalizedDeliveryOrder = async (req: Request, res: Response) => {
         let detail: Partial<IDetallePedido>;
         let cart: Partial<ICarta | Document | any>;
         let subtotal: number = 0;
-        if(_order.status === 'Entregado') return err(res.status(400).json({ message: 'El pedido ya fue finalizado' }));
+        if(_order.status === 'Por entregar') return err(res.status(400).json({ message: 'El pedido ya fue finalizado' }));
+        if(_order.status === 'Entregado') return err(res.status(400).json({ message: 'El pedido ya fue entregado' }));
         _order.observation = _order.observation + ` - ${phoneNumber}, ${reference}`;
         _order.status = 'Por entregar';
         for(let i in _order.orderDetail) {
@@ -181,7 +229,7 @@ export const finalizedDeliveryOrder = async (req: Request, res: Response) => {
         const newReceipt = new Receipt({ orderId, payment: { id: newSale._id, slug: newSale.slug }, igv: 1.18, subtotal: newSale.amount, total: (newSale.amount * 1.18 + newSale.aditional).toFixed(2), receiptNumber: await getReceiptsLenght() + 1})
         await newReceipt.save();
         await _order.save();
-        return ok(res.status(200).json({ message: 'Pedido finalizado correctamente' }));
+        return ok(res.status(200).json({ message: 'Pedido finalizado correctamente', receiptId: newReceipt._id }));
     } catch (error) {
         return err(res.status(500).json({ message: error.message }));
     }

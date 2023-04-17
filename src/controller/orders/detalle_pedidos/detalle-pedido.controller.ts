@@ -14,7 +14,8 @@ const verificar = new Verificar()
 export const createOrderDetail = async (req: Request, res: Response) => {
     try {
         const { user_token } = req.headers;
-        const { deliveryDate, observation, data, saleType } = req.body;
+        let { deliveryDate, observation, data, saleType } = req.body;
+        saleType = saleType.toString().toLowerCase();
         const user: any = await verificar.decodeToken(user_token); 
         let cartByName: Partial<ICarta | Document | any>;
         let newOrder = new Pedido({ deliveryDate: new Date(deliveryDate), client: { id: user._id, name: user.name, email: user.email, slug: user.slug }, observation, saleType });
@@ -29,7 +30,7 @@ export const createOrderDetail = async (req: Request, res: Response) => {
             await Pedido.findByIdAndUpdate(newOrder._id, { $push: { orderDetail: newOrderDetail._id } });
             centinel = true;
         })
-        return ok(res.status(200).json({ message: 'Detalle de pedido creado', orderId: newOrder._id }));
+        return ok(res.status(200).json({ message: 'Detalle de pedido creado', /* orderId: newOrder._id */ }));
     } catch (error) {
         return err(res.status(500).json({ message: error.message }));
     }

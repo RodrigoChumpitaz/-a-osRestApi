@@ -91,6 +91,9 @@ export const confirmOrder = async (req: Request, res: Response) => {
         const { id } = req.params;
         const orderToConfirm = await Pedido.findById(id); 
         let estadoActual = orderToConfirm.status;
+        if(estadoActual === 'Pendiente') {
+            return err(res.status(400).json({ message: 'El pedido está pendiente' }));
+        }
         if (estadoActual === 'Entregado') {
             return err(res.status(400).json({ message: 'El pedido ya fue entregado' }));
         }
@@ -100,9 +103,9 @@ export const confirmOrder = async (req: Request, res: Response) => {
         if(req.file){
             const file: Partial<FileResponse> = req.file;
             orderToConfirm.imgPrueba = file.location;
-        }else{
+        }/* else{
             return err(res.status(400).json({ message: 'La imagen de prueba es obligatoria' }));
-        }
+        } */
         orderToConfirm.status = 'Entregado';
         await orderToConfirm.save();
         return ok(res.status(200).json({ message: 'Pedido confirmado' }));
@@ -196,7 +199,7 @@ export const paidOrder = async (req: Request, res: Response) => {
         if(!data.id){
             return err(res.status(400).json({ message: 'No se pudo procesar el pago' }));
         }
-        const orderAmount = (data.amount / 100).toFixed(2);
+        const orderAmount = ((data.amount / 100)).toFixed(2); 
         const newSale = new Sales({ orderId: orderId, amount: orderAmount, currency: data.currency_code, paymentId: data.id })
         if(_order.saleType === 'delivery') {
             newSale.aditional = 10;
@@ -245,7 +248,7 @@ export const finalizedDeliveryOrder = async (req: Request, res: Response) => {
         }
         let orderSale = await Sales.findOne({ orderId })
         await User.findByIdAndUpdate(_order.client.id, { carrito: [] });
-        const newReceipt = new Receipt({ orderId, payment: { id: orderSale._id, slug: orderSale.slug }, igv: 1.18, subtotal: orderSale.amount, total: (orderSale.amount).toFixed(2), receiptNumber: await getReceiptsLenght() + 1})
+        const newReceipt = new Receipt({ orderId, payment: { id: orderSale._id, slug: orderSale.slug }, igv: 1.18, subtotal: orderSale.amount, total: (orderSale.amount + orderSale.aditional).toFixed(2), receiptNumber: await getReceiptsLenght() + 1})
         await newReceipt.save();
         await _order.save();
         return ok(res.status(200).json({ message: 'Pedido finalizado correctamente', receiptId: newReceipt._id }));

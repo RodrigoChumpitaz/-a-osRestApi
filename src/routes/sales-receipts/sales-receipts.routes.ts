@@ -3,9 +3,9 @@ import { countDetailsByCategory, detailSaleByDate, generatedReceipts, getReceipt
 
 const router = Router();
 
-router.get('/generated-receipt', getReceipts)
-router.get('/generated-receipt/:id', getReceiptTById)
-router.get('/generated-receipt/:receiptId', generatedReceipts)
+router.get('/get-receipts', getReceipts)
+router.get('/get-receipt/:id', getReceiptTById)
+router.get('/generated-receipt', generatedReceipts)
 
 
 /* REPORTES */
